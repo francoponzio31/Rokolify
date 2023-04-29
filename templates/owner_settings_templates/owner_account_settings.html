@@ -1,0 +1,82 @@
+{% extends "owner_settings_templates/owner_settings_base_template.html" %}
+
+{% block head %}
+    {{ super() }}
+{% endblock %}
+
+{% block title %}
+    Account Settings
+{% endblock %}
+
+{% block messages %}
+    <div id="devices-alert-container"></div>
+{% endblock %}
+
+{% block main_title %}
+    Mi cuenta
+{% endblock %}
+
+
+{% block main_content %}
+
+    <div class="d-flex flex-column gap-4">
+            
+        <!-- Datos cuenta de Spotify -->
+        
+        <section class="p-4 border rounded-3">                
+            <h2 class="fs-4">Cuenta de Spotify asociada</h2>
+            
+                <div class="d-flex flex-row align-items-center my-3 pe-2 gap-3">
+                    {% if spotify_profile['images'] %}
+                        <img src="{{ spotify_profile['images'][0]['url'] }}" class="item-image rounded-start img-thumbnail" style="width:85px;" alt="user-image">
+                    {% else %}
+                        <img src="{{url_for('static', filename='img/bxs-user.svg')}}" class="item-image rounded-start img-thumbnail" style="width:85px;" alt="user-image">
+                    {% endif %}
+                    <div class="w-100 justify-content-between">
+                        <p class="mb-1"><span class="fw-bold mb-0">Email: </span>{{spotify_profile["email"]}} </p>
+                        <p class="mb-1"><span class="fw-bold mb-0">Nombre de usuario: </span>{{spotify_profile["display_name"]}} </p>
+                        <p class="mb-1"><span class="fw-bold mb-0">Perfil de Spotify: </span> <a href="https://open.spotify.com/user/{{spotify_profile['id']}}" target="_blank" class="text-decoration-none">Ir al perfil</a></p>
+                    </div>
+                </div>
+            
+        </section>
+        
+        <!-- Reproductor -->
+        
+        <section class="p-4 border rounded-3">                
+            <h2 class="fs-4">Reproductor activo</h2>
+            
+                {% if active_device %}
+
+                    <div class="d-flex flex-row align-items-center my-3 pe-2 gap-3">
+                        {% if active_device["type"] == "Computer" %}
+                            <img src="{{url_for('static', filename='img/laptop.svg')}}" class="item-image rounded-start" style="width:50px;" alt="item-image">
+                        {% elif active_device["type"] == "Smartphone" %}
+                            <img src="{{url_for('static', filename='img/phone.svg')}}" class="item-image rounded-start" style="width:50px;" alt="item-image">
+                        {% elif active_device["type"] == "Speaker" %}
+                            <img src="{{url_for('static', filename='img/speaker.svg')}}" class="item-image rounded-start" style="width:50px;" alt="item-image">
+                        {% endif %}
+                        <div class="w-100 justify-content-between">
+                            <h5 class="card-title fs-5 fw-semibold mb-0">{{ active_device["name"] }}</h5>
+                        </div>
+                    </div>
+                
+                {% else %}
+                    <div class="d-flex flex-row align-items-center mb-2 pe-2 gap-3">
+                        <div class="w-100 justify-content-between">
+                            <h5 class="card-title fs-5 fw-semibold mb-0">No hay ningún reproductor activo</h5>
+                        </div>
+                    </div>
+                {% endif %}
+
+        </section>
+        
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script> let devicesValidation = "{{available_devices_existence}}"; </script>
+    <script src="{{url_for('static', filename='js/owner_scripts/owner_devices_alert.js')}}"></script>
+{% endblock %}

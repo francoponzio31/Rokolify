@@ -1,0 +1,65 @@
+{% extends "guest_templates/guest_views_base_template.html" %}
+
+{% block head %}
+    {{ super() }}
+{% endblock %}
+
+{% block title %}
+    {{ super() }}
+    Search Track
+{% endblock %}
+
+{% block main_content %}
+
+    <!-- Tabs -->
+    <ul class="nav nav-tabs mb-3">
+        {% if owner_playlists_access %}
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('guest_bp.show_allowed_playlists') }}">Playlists disponibles</a>
+            </li>
+        {% endif %}
+        
+        {% if free_mode %}
+            <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="#">Buscá una canción</a>
+            </li>
+        {% endif %}
+    </ul>
+    
+    <section class="items-section">
+
+        <form class="input-group mb-3">
+            <button type="submit" class="btn btn-secondary" id="search-input-btn">
+                <img src="{{url_for('static', filename='img/search.svg')}}" alt="search-btn-icon">
+                </button>
+            <input type="text" class="form-control" id="search-input" placeholder="Buscá en el catálogo de Spotify" aria-label="search-input" aria-describedby="search-input-btn">
+        </form>
+
+        <div id="search-result-container" class="d-flex flex-column gap-2 px-1">   
+        </div>
+
+        <!-- search barckground image -->
+        <div id="empty-search-container" class="empty-search d-flex justify-content-center align-items-center position-absolute top-50 start-50 translate-middle">
+            <img src="{{url_for('static', filename='img/empty-search-img.svg')}}" alt="empty-search-img">
+        </div>
+
+        <!-- Load spinner: -->
+        <div id="search-load-spinner" class="d-flex justify-content-center align-items-center position-absolute top-50 start-50 translate-middle d-none">
+            <div class="spinner-border" style="width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+
+        
+    </section>
+    
+{% endblock %}
+    
+{% block scripts %}
+    {{ super() }}
+    <script src="{{url_for('static', filename='js/guest_scripts/guest_search_button.js')}}"></script>
+    
+    <script> const addToQueueIconPath = "{{url_for('static', filename='img/bx-list-plus.svg')}}"; </script>
+    <script src="{{url_for('static', filename='js/guest_scripts/guest_add_to_queue.js')}}"></script>
+
+{% endblock %}

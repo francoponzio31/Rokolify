@@ -1,0 +1,17 @@
+:root {
+  --bs-heading-color: #e0e6ee;
+}
+
+.track-card{
+  cursor: pointer;
+}
+
+.track-card-link{
+  text-decoration: none;
+  font-size: 1.07rem;
+  font-weight: 700;
+}
+
+.track-card-section-title{
+  margin-bottom: 0.7rem;
+}

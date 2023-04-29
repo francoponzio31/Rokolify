@@ -1,0 +1,83 @@
+{% extends "guest_templates/guest_views_base_template.html" %}
+
+{% block head %}
+    {{ super() }}
+{% endblock %}
+
+{% block title %}
+    {{ super() }}
+    Playlist Items
+{% endblock %}
+
+{% block main_content %}
+
+    <nav aria-label="breadcrumb mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('guest_bp.show_allowed_playlists') }}" class="text-decoration-none">Playlists accesibles</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ playlist_name }}</li>
+        </ol>
+    </nav>
+
+    <section class="items-section">
+
+        <h2 class="fs-4 pb-2">{{ playlist_name }}</h2>
+
+        <!-- tracks container -->
+        <div id="playlist-items-container" class="d-flex flex-column gap-2">   
+
+            {% for item in playlist_items %}
+            
+            <div class="track-card card d-flex flex-row align-items-center pe-2 gap-3 bg-dark-subtle border-dark-subtle" data-item-uri="{{ item['track']['uri'] }}" data-item-id="{{ item['track']['id'] }}" data-playlist-track-index="{{playlist_items.index(item)}}">
+                {% if item['track']['album']['images'] %}
+                    <img src="{{ item['track']['album']['images'][0]['url'] }}" class="item-image rounded-start" style="width:60px; max-height:60px;" alt="item-image" data-bs-toggle="modal" data-bs-target="#track-modal">
+                {% endif %}
+                <div class="w-100 justify-content-between text-truncate" data-bs-toggle="modal" data-bs-target="#track-modal">
+                    <h5 class="card-title fs-6 fw-bold text-truncate mb-0">{{ item["track"]["name"] }}</h5>
+                    <small>{{ ", ".join(item["track"]["artists"] | map(attribute="name") | list) }}</small>
+                </div>
+                
+                <button type="button" class="btn btn-primary btn-sm add-to-queue-btn rounded-pill">
+                    <img src="{{url_for('static', filename='img/bx-list-plus.svg')}}" alt="add-to-queue-btn-icon">
+                </button>
+            </div>
+            
+            {% endfor %}
+            
+        </div>
+
+        
+        {% if next_tracks_url %}
+        
+            <!-- Load sipinner: -->
+            <div id="load-more-tracks-spinner" class="d-flex justify-content-center pt-2 d-none">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+            
+            <!-- Load more btn -->
+            <div id="load-more-tracks" class="d-flex justify-content-center pt-4 pb-1">
+                <button type="button" class="btn btn-outline-secondary"
+                    style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .85rem; --bs-btn-font-weight: 500;">
+                    Cargar más canciones
+                </button>            
+            </div>
+
+        {% endif %}
+
+    </section>
+
+{% endblock %}
+    
+{% block scripts %}
+    {{ super() }}   
+
+    <script src="{{url_for('static', filename='js/guest_scripts/guest_add_to_queue.js')}}"></script>
+    
+    {% if next_tracks_url %}
+        <script> const addToQueueIconPath = "{{url_for('static', filename='img/bx-list-plus.svg')}}"; </script>
+        <script> let nextItemsUrl = "{{next_tracks_url}}".replace(/amp;/g, ""); </script>
+        <script src="{{url_for('static', filename='js/guest_scripts/guest_load_more_tracks.js')}}"></script>
+    {% endif %}
+
+{% endblock %}

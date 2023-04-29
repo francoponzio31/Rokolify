@@ -1,0 +1,85 @@
+{% extends "guest_templates/guest_views_base_template.html" %}
+
+{% block head %}
+    {{ super() }}
+{% endblock %}
+
+{% block title %}
+    {{ super() }}
+    Playlists
+{% endblock %}
+
+{% block main_content %}
+
+    <!-- Tabs -->
+    <ul class="nav nav-tabs mb-3">
+        {% if owner_playlists_access %}
+            <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="#">Playlists disponibles</a>
+            </li>
+        {% endif %}
+
+        {% if free_mode %}
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('guest_bp.guest_search_page') }}">Buscá una canción</a>
+            </li>
+        {% endif %}
+    </ul>
+    
+
+    <section class="playlists-section px-2">
+        
+        <h2 class="fw-medium fs-4 pb-2">Selección de playlist</h2>
+
+        <!-- playlists container -->
+        <div id="playlists-container" class="row row-cols-1 row-cols-sm-1 row-cols-md-1 g-2">   
+
+            {% for playlist in allowed_playlists %}
+                <div class="col">
+                    <div class="playlist-card card d-flex flex-row align-items-center pe-2 gap-3 bg-dark-subtle border-dark-subtle" style="--bs-bg-opacity: .9; cursor: pointer;" data-playlist-id="{{ playlist['id'] }}">
+                        <div>
+                            <img src="{{ playlist['images'][0]['url'] }}" class="item-image rounded-start object-fit-cover" style="max-width: 80px; max-height:80px; width:80px; height:auto;" alt="item-image">
+                        </div>
+                        <div class="w-100 text-truncate">
+                            <h5 class="card-title fs-5 fw-bold text-truncate"> {{ playlist["name"] }} </h5>
+                        </div>                        
+                    </div>
+                </div>
+            {% endfor %}
+
+        </div>
+        
+
+        {% if next_playlists_url %}
+        
+            <!-- Load sipinner: -->
+            <div id="load-more-playlists-spinner" class="d-flex justify-content-center pt-2 d-none">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+            
+            <!-- Load more btn -->
+            <div id="load-more-playlists" class="d-flex justify-content-center pt-4 pb-1">
+                <button type="button" class="btn btn-outline-secondary"
+                        style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .85rem; --bs-btn-font-weight: 500;">
+                        Cargar más playlists
+                </button>            
+            </div>
+
+        {% endif %}
+
+    </section>
+
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    
+    <script src="{{url_for('static', filename='js/guest_scripts/guest_playlist_items_redirection.js')}}"></script>
+
+    {% if next_playlists_url %}
+        <script> let nextPlaylistsUrl = "{{next_playlists_url}}".replace(/amp;/g, ""); </script>
+        <script src="{{url_for('static', filename='js/guest_scripts/guest_load_more_playlists.js')}}"></script>
+    {% endif %}
+{% endblock %}

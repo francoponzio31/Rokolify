@@ -1,0 +1,6 @@
+python-dotenv
+requests
+flask
+pymongo
+qrcode
+pillow
