@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block title %}
-    Owner settings
+    Configuración para invitados
 {% endblock %}
 
 {% block messages %}
@@ -21,34 +21,82 @@
     <div class="d-flex flex-column gap-4">
         
         <!-- Links de acceso a invitados -->
-
         <section class="p-4 border rounded-3">                
-            <h2 class="fs-4">Acceso para invitados</h2>
+            <h2 class="fs-4">Acceso a sección de invitados</h2>
+
             <div class="mb-3">
-                <div class="form-check form-switch my-3">
-                    <input class="form-check-input user-setting-switch" type="checkbox" role="button" id="allow-guest-access-switch" name="guest-access" {% if allow_guest_access == True %} checked {% endif %}>
-                    <label class="form-check-label" for="allow-guest-access-switch">Permitir intervención de invitados</label>
-                </div>
-                <label for="guest-url-input" class="form-label">URL para invitados</label>
+                <label class="form-label">URL de acceso para invitados</label>
                 <div class="input-group">
-                    <input id="guest-url-input" value="{{ guest_url }}" class="form-control" disabled readonly>
+                    <span class="input-group-text form-control overflow-hidden">
+                        <a id="guest-url-link" href="{{ guest_url }}" target="_blank" class="text-decoration-none text-primary-emphasis">{{ guest_url }}</a>
+                    </span>
                     <button id="copy-url-btn" type="button" class="btn btn-primary">
                         <img src="{{url_for('static', filename='img/bxs-copy.svg')}}" alt="copy-btn-icon">
                         Copiar
                     </button>
-                </div>
+                </div>                
             </div>
-            <button type="button" class="btn btn-primary" id="qr-btn">
+
+
+            <!-- Button trigger QR modal -->
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
                 <img src="{{url_for('static', filename='img/qr-code.svg')}}" alt="qr-btn-icon">
                 Generar QR
             </button>
+            
+            <!-- QR Modal -->
+            <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="exampleModalLabel">QR de acceso para invitados</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                            <div class="modal-body">
+                                <img class="rounded-3 w-100" src="{{get_qr_url}}?guest_url={{guest_url}}">
+                            </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                            <a href="{{get_qr_url}}?guest_url={{guest_url}}" class="btn btn-primary">Descargar QR</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </section>
-        
-        <!-- Configuracion de Recursoshabilitados a invitados -->
 
+        
+        <!-- Control de permisos de invitados -->
         <section class="p-4 border rounded-3  d-flex flex-column gap-3">
 
-            <h2 class="fs-4">Recursos habilitados para invitados</h2>
+            <h2 class="fs-4">Control de permisos</h2>
+            <div>
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input user-setting-switch" type="checkbox" role="button" id="allow-guest-access-switch" name="guest-access" {% if allow_guest_access == True %} checked {% endif %}>
+                    <label class="form-check-label" for="allow-guest-access-switch">Agregar a cola de reproducción</label>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-4">
+                        <label class="form-label">
+                            Tiempo mínimo reagregar una canción
+                            <a tabindex="0" class="btn btn-secondary rounded-pill py-0 px-1 ms-3" data-bs-container="body" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="Tiempo en minutos que debe pasar para que la misma canción se vuelva a agregar a la cola de reproducción por invitados. Esta validación solo aplica a canciones agregadas por invitados.">
+                                <img src="{{url_for('static', filename='img/question-lg.svg')}}" alt="free-mode-btn-icon">
+                            </a>
+                        </label>
+                        <div class="input-group">
+                            <input type="number" id="re-add-song-minutes-input" class="form-control" value="{{time_to_re_add_same_track}}" min="0"/>
+                            <button type="button" id="re-add-song-minutes-save-btn" class="btn btn-primary" disabled>Guardar</button>
+                        </div>  
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- Configuracion de Recursos habilitados a invitados -->
+        <section class="p-4 border rounded-3  d-flex flex-column gap-3">
+
+            <h2 class="fs-4">Recursos habilitados</h2>
             
             <!-- Modo libre -->
 
@@ -57,22 +105,23 @@
                 <div class="input-group mb-3">
                     <div class="form-check form-switch">
                         <input class="form-check-input user-setting-switch" type="checkbox" role="button" id="free-mode-switch" name="free-mode" {% if free_mode == True %} checked {% endif %}>
-                        <label class="form-check-label" for="free-mode-switch">Modo libre</label>
+                        <label class="form-check-label">
+                            Modo libre
+                            <a tabindex="0" class="btn btn-secondary rounded-pill py-0 px-1 ms-3" data-bs-container="body" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="Habilita a los invitados a buscar cualquier canción dentro del catálogo de Spotify y agregarla a la cola de reproducción.">
+                                <img src="{{url_for('static', filename='img/question-lg.svg')}}" alt="free-mode-btn-icon">
+                            </a>
+                        </label>
                     </div>
-                    <a tabindex="0" class="btn btn-secondary rounded-pill py-0 px-1 mx-3" data-bs-container="body" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="Habilita a los invitados a buscar cualquier canción dentro del catálogo de Spotify y agregarla a la cola de reproducción">
-                        <img src="{{url_for('static', filename='img/question-lg.svg')}}" alt="free-mode-btn-icon">
-                    </a>
                 </div>
         
             </div>
 
             <!-- Acceso a playlists -->
-
             <div class="playlists-access">
                 
                 <div class="form-check form-switch mb-3">
                     <input class="form-check-input user-setting-switch" type="checkbox" role="button" id="owner-playlists-access-switch" name="playlist-access" {% if owner_playlists_access == True %} checked {% endif %}>
-                    <label class="form-check-label" for="owner-playlists-access-switch">Acceso a mis playlists</label>
+                    <label class="form-check-label">Acceso a mis playlists</label>
                 </div>
                 <button type="button" id="owner-playlists-settings-btn" class="btn btn-primary align-self-start" data-bs-toggle="modal" data-bs-target="#paylist-settings">
                     Configurar acceso a playlists
@@ -241,9 +290,6 @@
     <script> const playlistsAmountToShow = "{{ playlists_amount_to_show }}" ; </script>
     <script src="{{url_for('static', filename='js/owner_scripts/owner_playlists_settings_pagination.js')}}"></script>
 
-    <script> const getQrUrl = "{{ get_qr_url }}" ; const guestUrl = "{{ guest_url }}" ; </script>
-    <script src="{{url_for('static', filename='js/owner_scripts/owner_get_qr.js')}}"></script>
-    
     <script> let devicesValidation = "{{available_devices_existence}}"; </script>
     <script src="{{url_for('static', filename='js/owner_scripts/owner_devices_alert.js')}}"></script>
     

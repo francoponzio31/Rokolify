@@ -5,7 +5,8 @@
 {% endblock %}
 
 {% block title %}
-    Account Settings
+    {{ super() }}
+    Configuración de cuenta
 {% endblock %}
 
 {% block messages %}
@@ -26,16 +27,18 @@
         <section class="p-4 border rounded-3">                
             <h2 class="fs-4">Cuenta de Spotify asociada</h2>
             
-                <div class="d-flex flex-row align-items-center my-3 pe-2 gap-3">
+                <div class="d-flex flex-row align-items-center mt-3 pe-2 gap-3">
+                    
                     {% if spotify_profile['images'] %}
-                        <img src="{{ spotify_profile['images'][0]['url'] }}" class="item-image rounded-start img-thumbnail" style="width:85px;" alt="user-image">
+                        <img src="{{ spotify_profile['images'][0]['url'] }}" class="align-self-start rounded-circle" style="width:65px;" alt="user-image">
                     {% else %}
-                        <img src="{{url_for('static', filename='img/bxs-user.svg')}}" class="item-image rounded-start img-thumbnail" style="width:85px;" alt="user-image">
+                        <img src="{{url_for('static', filename='img/bxs-user.svg')}}" class="align-self-start" style="width:65px;" alt="user-image">
                     {% endif %}
                     <div class="w-100 justify-content-between">
                         <p class="mb-1"><span class="fw-bold mb-0">Email: </span>{{spotify_profile["email"]}} </p>
                         <p class="mb-1"><span class="fw-bold mb-0">Nombre de usuario: </span>{{spotify_profile["display_name"]}} </p>
-                        <p class="mb-1"><span class="fw-bold mb-0">Perfil de Spotify: </span> <a href="https://open.spotify.com/user/{{spotify_profile['id']}}" target="_blank" class="text-decoration-none">Ir al perfil</a></p>
+                        <p class="mb-1"><span class="fw-bold mb-0">ID de usuario: </span>{{spotify_profile["id"]}} </p>
+                        <p class="mb-1"><span class="fw-bold mb-0">Perfil de Spotify: </span> <a href="https://open.spotify.com/user/{{spotify_profile['id']}}" target="_blank" class="text-decoration-none">{{spotify_profile["display_name"]}}</a></p>
                     </div>
                 </div>
             

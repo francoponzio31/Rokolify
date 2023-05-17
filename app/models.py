@@ -4,7 +4,7 @@ class User(dict):
         self["email"] = email
         self["access_token_data"] = access_token_data
         self["guest_settings"] = {
-            "time_to_re_add_same_track": 1800,
+            "time_to_re_add_same_track": 20,  # Tiempo expresado en minutos
             "guest_permissions": {
                 "allow_guest_access": True,
                 "free_mode": True,

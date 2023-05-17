@@ -1,4 +1,6 @@
 const userSettingsSwitchs = document.querySelectorAll(".user-setting-switch");
+const reAddSongMinutesInput = document.getElementById("re-add-song-minutes-input");
+const reAddSongMinutesBtn = document.getElementById("re-add-song-minutes-save-btn");
 
 const playlistAccesSwitch = document.getElementById("owner-playlists-access-switch");
 const playlistSettingsBtn = document.getElementById("owner-playlists-settings-btn");
@@ -53,6 +55,31 @@ userSettingsSwitchs.forEach(settingSwitch => {
 
 });
 
+reAddSongMinutesInput.addEventListener("input", () => {
+    reAddSongMinutesBtn.disabled = false;
+
+})
+
+reAddSongMinutesBtn.addEventListener("click", () => {
+    reAddSongMinutesBtn.disabled = true;
+    fetch("/owner/api/guest_permissions", {
+        method:"PUT",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body:JSON.stringify({"permission": "time_to_re_add_same_track", "value": parseInt(reAddSongMinutesInput.value)})
+    })
+    .then(response => {
+        if (!response.ok){
+            throw new Error(`Error: ${response.status} ${response.statusText}`);
+        }
+        return response.json()
+    })
+    .then(data => {
+        console.log(data)
+    })
+    .catch(error => console.error(error))
+})
 
 //? --------------------------------- Eventos de configuración de playlists:
 

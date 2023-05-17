@@ -3,7 +3,7 @@ from itsdangerous import URLSafeSerializer
 import json
 from ..services.owner_account_service import get_user_playlists, get_user_profile
 from ..services.owner_playback_service import get_available_devices
-from ..services.app_users_service import get_user_data, update_guest_permission, update_playlists_access_settings
+from ..services.rokolify_users_service import get_user_data, update_guest_permission, update_playlists_access_settings, update_user
 from ..blueprints.spotify_auth import get_access_token
 from ..utilities import generate_qr_img
 
@@ -73,6 +73,7 @@ def owner_settings_for_guests():
         "allow_guest_access": guest_permissions["allow_guest_access"],
         "free_mode": guest_permissions["free_mode"],
         "owner_playlists_access": guest_permissions["owner_playlists_access"],
+        "time_to_re_add_same_track": user_data["guest_settings"]["time_to_re_add_same_track"],
 
         # Playlist settings:
         "playlists_settings": playlists_settings,
@@ -106,20 +107,26 @@ def update_guest_permissions():
     owner_email = session.get("owner_email")
     request_body = request.json
 
-    if request_body.get("permission") and isinstance(request_body.get("value"), bool):
+    if not request_body.get("permission"):
+        return jsonify({"success": False, "message": "Permiso iválido", "status_code": 403})
 
-        #TODO: agregar una clave para el usuario en el token de la sesion y en el documento en mongo y validarla antes de actualizar el documento
-        if request_body["permission"] == "guest-access":
-            update_guest_permission(owner_email, "allow_guest_access", request_body["value"])
-        elif request_body["permission"] == "free-mode":
-            update_guest_permission(owner_email, "free_mode", request_body["value"])
-        elif request_body["permission"] == "playlist-access":
-            update_guest_permission(owner_email, "owner_playlists_access", request_body["value"])
+
+    #TODO: agregar una clave para el usuario en el token de la sesion y en el documento en mongo y validarla antes de actualizar el documento
+    if request_body["permission"] == "guest-access" and isinstance(request_body.get("value"), bool):
+        update_guest_permission(owner_email, "allow_guest_access", request_body["value"])
+
+    elif request_body["permission"] == "free-mode" and isinstance(request_body.get("value"), bool):
+        update_guest_permission(owner_email, "free_mode", request_body["value"])
+    
+    elif request_body["permission"] == "playlist-access" and isinstance(request_body.get("value"), bool):
+        update_guest_permission(owner_email, "owner_playlists_access", request_body["value"])
+    
+    elif request_body["permission"] == "time_to_re_add_same_track" and isinstance(request_body.get("value"), int) and request_body["value"] >= 0:
+        update_user(owner_email, {f"guest_settings.time_to_re_add_same_track": request_body["value"]})
 
     else:
-        # TODO: retornar mensaje de error  al actualizar los ajustes, codigo de estatus que relfeje un error
-        # return Response("hubo un error", status=400)
-        pass
+        return jsonify({"success": False, "message": "Acción rechazada", "status_code": 403})
+
 
     return {"message": "La operación se realizó correctamente"}
 

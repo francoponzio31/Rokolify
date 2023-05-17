@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, current_app, jsonify, ses
 from ..services.owner_account_service import get_user_playlists
 from ..services.spotify_catalog_service import get_playlist, get_playlist_items, search_tracks_in_catalog, get_track, get_artist, check_if_track_is_in_playlist
 from ..services.owner_playback_service import add_item_to_queue, get_user_queue, get_available_devices, skip_to_next, push_to_player
-from ..services.app_users_service import get_user_data, check_if_track_was_recently_added_by_guests, add_recently_added_track_by_guest
+from ..services.rokolify_users_service import get_user_data, check_if_track_was_recently_added_by_guests, add_recently_added_track_by_guest
 from ..blueprints.spotify_auth import get_access_token
 from itsdangerous import URLSafeSerializer
 from datetime import datetime
@@ -19,6 +19,7 @@ def guest_gateway(token):
     owner_email = data["owner_email"]
     # Se añade el identificador de la cuenta huesped a la sesion:
     session["owner_email"] = owner_email
+    session.permanent = True
 
     return redirect(url_for("guest_bp.show_allowed_playlists"))
 
@@ -67,7 +68,10 @@ def show_playlist_items(playlist_id):
     owner_playlists_access = guest_permissions["owner_playlists_access"]
 
     # Se valida si está habilitado el recurso:
-    if not owner_playlists_access:
+    if owner_playlists_access:
+        # TODO: cuar el playlist_id para validar que la playlist este entre las habilitadas
+        pass
+    else:
         if free_mode:
             return redirect(url_for("guest_bp.guest_search_page"))
         else:

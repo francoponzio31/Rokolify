@@ -2,15 +2,17 @@ from flask import session, request, current_app, redirect, jsonify, url_for, ren
 from app import create_app
 from app.blueprints.spotify_auth import get_access_token
 import requests 
-from app.services.app_users_service import get_user_data
+from app.services.rokolify_users_service import get_user_data
 
 
 app = create_app()
+
 
 @app.before_request 
 def before_request_callback(): 
     # TODO: borrar, temporal
     # current_app.logger.info(request.endpoint)
+
     if request.endpoint not in ["spotify_auth.spotify_login", "spotify_auth.callback", "guest_bp.guest_gateway", "index"]:
         if not session.get("owner_email"):
             return render_template("session_expired.html")
@@ -23,6 +25,16 @@ def index():
         return redirect(url_for("owner_bp.account_settings"))
     else:
         return redirect(url_for("spotify_auth.spotify_login"))
+
+
+@app.get("/login")
+def login():
+    
+    context = {
+        "google_client_id": current_app.config["GOOGLE_CLIENT_ID"]
+    }
+
+    return render_template("login_templates/rokolify_login.html", **context)
 
 
 @app.get("/token")

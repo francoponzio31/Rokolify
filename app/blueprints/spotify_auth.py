@@ -4,7 +4,7 @@ import urllib.parse
 import base64
 import secrets
 from datetime import datetime
-from ..services.app_users_service import get_user_data, add_user, update_user
+from ..services.rokolify_users_service import get_user_data, add_user, update_user
 from ..models import User
 
 
@@ -14,7 +14,7 @@ spotify_auth = Blueprint("spotify_auth", __name__)
 @spotify_auth.get("/spotify_login")
 def spotify_login():
 
-    client_id = current_app.config["CLIENT_ID"]
+    client_id = current_app.config["SPOTIFY_CLIENT_ID"]
     scope = current_app.config["SCOPE"]
     redirect_uri = current_app.config["BASE_URL"] + "/callback"
     state = secrets.token_hex(16)
@@ -35,8 +35,8 @@ def spotify_login():
 @spotify_auth.get("/callback")
 def callback():
 
-    client_id = current_app.config["CLIENT_ID"]
-    client_secret = current_app.config["CLIENT_SECRET"]
+    client_id = current_app.config["SPOTIFY_CLIENT_ID"]
+    client_secret = current_app.config["SPOTIFY_CLIENT_SECRET"]
     redirect_uri = current_app.config["BASE_URL"] + "/callback"
 
     # Código de autorización obtenido luego de que el usuario se haya logeado:
@@ -85,6 +85,7 @@ def callback():
 
         # Guardo el email del dueño de la cuenta en la sesion:
         session["owner_email"] = user_email
+        session.permanent = True
     
     else:
         #TODO: en caso de no poder obtener los datos del usuario y guardarlo en la sesion arrojar un error
@@ -97,8 +98,8 @@ def callback():
 
 def refresh_access_token(owner_email, refresh_token):
 
-    client_id = current_app.config["CLIENT_ID"]
-    client_secret = current_app.config["CLIENT_SECRET"]
+    client_id = current_app.config["SPOTIFY_CLIENT_ID"]
+    client_secret = current_app.config["SPOTIFY_CLIENT_SECRET"]
 
     auth_str = f"{client_id}:{client_secret}"
     auth_b64 = base64.b64encode(auth_str.encode("ascii")).decode("ascii")
