@@ -6,7 +6,7 @@ Este modulo contiene funciones que permiten obtener información del cátalogo d
 """
 
 
-def get_playlist(access_token, playlist_id):
+def get_playlist(spotify_access_token, playlist_id):
 
     """
     Retorna información de los items de una playlist.
@@ -15,7 +15,7 @@ def get_playlist(access_token, playlist_id):
     url = f"https://api.spotify.com/v1/playlists/{playlist_id}"
 
     headers = {
-        "Authorization": f"Bearer {access_token}",
+        "Authorization": f"Bearer {spotify_access_token}",
         "Content-Type": "application/json"
     }
 
@@ -30,7 +30,7 @@ def get_playlist(access_token, playlist_id):
         return False, {"status_code": response.status_code}
 
 
-def get_playlist_items(access_token, playlist_id, offset=0, limit=20):
+def get_playlist_items(spotify_access_token, playlist_id, offset=0, limit=20):
 
     """
     Retorna los items de una playlist.
@@ -39,7 +39,7 @@ def get_playlist_items(access_token, playlist_id, offset=0, limit=20):
     url = f"https://api.spotify.com/v1/playlists/{playlist_id}/tracks?offset={offset}&limit={limit}"
 
     headers = {
-        "Authorization": f"Bearer {access_token}",
+        "Authorization": f"Bearer {spotify_access_token}",
         "Content-Type": "application/json"
     }
 
@@ -54,7 +54,7 @@ def get_playlist_items(access_token, playlist_id, offset=0, limit=20):
         return False, {"status_code": response.status_code}
 
 
-def search_tracks_in_catalog(access_token, search_str):
+def search_tracks_in_catalog(spotify_access_token, search_str):
 
     """
     Busca una canción en el catalogo de spotify.
@@ -63,7 +63,7 @@ def search_tracks_in_catalog(access_token, search_str):
     url = f"https://api.spotify.com/v1/search?q={search_str}&type=track&limit=40"
 
     headers = {
-        "Authorization": f"Bearer {access_token}",
+        "Authorization": f"Bearer {spotify_access_token}",
         "Content-Type": "application/json"
     }
 
@@ -79,7 +79,7 @@ def search_tracks_in_catalog(access_token, search_str):
         return False, {"status_code": response.status_code}
 
 
-def get_track(access_token, track_id):
+def get_track(spotify_access_token, track_id):
 
     """
     Retorna los datos de una canción.
@@ -88,7 +88,7 @@ def get_track(access_token, track_id):
     url = f"https://api.spotify.com/v1/tracks/{track_id}"
 
     headers = {
-        "Authorization": f"Bearer {access_token}",
+        "Authorization": f"Bearer {spotify_access_token}",
         "Content-Type": "application/json"
     }
 
@@ -103,7 +103,7 @@ def get_track(access_token, track_id):
         return False, {"status_code": response.status_code}
 
 
-def get_artist(access_token, artist_id):
+def get_artist(spotify_access_token, artist_id):
 
     """
     Retorna los datos de un artista.
@@ -112,7 +112,7 @@ def get_artist(access_token, artist_id):
     url = f"https://api.spotify.com/v1/artists/{artist_id}"
 
     headers = {
-        "Authorization": f"Bearer {access_token}",
+        "Authorization": f"Bearer {spotify_access_token}",
         "Content-Type": "application/json"
     }
 
@@ -127,7 +127,7 @@ def get_artist(access_token, artist_id):
         return False, {"status_code": response.status_code}
 
 
-def check_if_track_is_in_playlist(access_token, track_uri, playlist_id, playlist_track_index):
+def check_if_track_is_in_playlist(spotify_access_token, track_uri, playlist_id, playlist_track_index):
 
     """
         Valida que la canción cuyo uri se pasa por parametro se encuentre en la playlist cuyo id se pasa por parametro. Para esto se toma el indice en donde se encuentra la canción dentro de la lista de items de la playlist (dato que se pasa por parámetro), se hace una request para obtener el item de la playlist en ese indice, y se valida que coincidan con el que se paso como parámetro.
@@ -136,7 +136,7 @@ def check_if_track_is_in_playlist(access_token, track_uri, playlist_id, playlist
     url = f"https://api.spotify.com/v1/playlists/{playlist_id}/tracks?offset={playlist_track_index}&limit=1&fields=items.track.uri"
 
     headers = {
-        "Authorization": f"Bearer {access_token}",
+        "Authorization": f"Bearer {spotify_access_token}",
         "Content-Type": "application/json"
     }
 

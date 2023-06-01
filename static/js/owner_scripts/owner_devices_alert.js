@@ -1,7 +1,8 @@
 const alertContainer = document.getElementById("devices-alert-container")
-devicesValidation = devicesValidation === "True" ? true : false
+linkedpotifyAccountValidation = linkedpotifyAccountValidation === "True";
+devicesValidation = devicesValidation === "True";
 
-if (!devicesValidation){
+if (linkedpotifyAccountValidation && !devicesValidation){
     
     const alertMessage = `
     <div class="alert alert-dark alert-dismissible" role="alert">

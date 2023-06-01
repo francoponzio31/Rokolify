@@ -6,7 +6,7 @@ Este modulo contiene funciones que permiten obtener información del perfil del 
 """
 
 
-def get_user_profile(access_token):
+def get_user_profile(spotify_access_token):
 
     """
     Retorna información del perfil del usuario actual.
@@ -15,7 +15,7 @@ def get_user_profile(access_token):
     url = "https://api.spotify.com/v1/me"
 
     headers = {
-        "Authorization": f"Bearer {access_token}",
+        "Authorization": f"Bearer {spotify_access_token}",
         "Content-Type": "application/json"
     }
 
@@ -30,7 +30,7 @@ def get_user_profile(access_token):
         return False, {"status_code": response.status_code}
 
 
-def get_user_playlists(access_token, offset=0, limit=20):
+def get_user_playlists(spotify_access_token, offset=0, limit=20):
 
     """
     Retorna información de las playlists del usuario.
@@ -39,7 +39,7 @@ def get_user_playlists(access_token, offset=0, limit=20):
     url = f"https://api.spotify.com/v1/me/playlists?offset={offset}&limit={limit}"
 
     headers = {
-        "Authorization": f"Bearer {access_token}",
+        "Authorization": f"Bearer {spotify_access_token}",
         "Content-Type": "application/json"
     }
 

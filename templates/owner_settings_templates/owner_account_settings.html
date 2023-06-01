@@ -22,64 +22,152 @@
 
     <div class="d-flex flex-column gap-4">
             
-        <!-- Datos cuenta de Spotify -->
+        <!-- Datos cuenta de Rokolify -->
         
         <section class="p-4 border rounded-3">                
-            <h2 class="fs-4">Cuenta de Spotify asociada</h2>
+            <h2 class="fs-4">Perfil de Rokolify</h2>
             
                 <div class="d-flex flex-row align-items-center mt-3 pe-2 gap-3">
-                    
-                    {% if spotify_profile['images'] %}
-                        <img src="{{ spotify_profile['images'][0]['url'] }}" class="align-self-start rounded-circle" style="width:65px;" alt="user-image">
-                    {% else %}
-                        <img src="{{url_for('static', filename='img/bxs-user.svg')}}" class="align-self-start" style="width:65px;" alt="user-image">
-                    {% endif %}
+                    <img src="{{ rokolify_profile['profile_picture'] }}" class="align-self-start rounded-circle" style="width:65px;" alt="user-image">      
                     <div class="w-100 justify-content-between">
-                        <p class="mb-1"><span class="fw-bold mb-0">Email: </span>{{spotify_profile["email"]}} </p>
-                        <p class="mb-1"><span class="fw-bold mb-0">Nombre de usuario: </span>{{spotify_profile["display_name"]}} </p>
-                        <p class="mb-1"><span class="fw-bold mb-0">ID de usuario: </span>{{spotify_profile["id"]}} </p>
-                        <p class="mb-1"><span class="fw-bold mb-0">Perfil de Spotify: </span> <a href="https://open.spotify.com/user/{{spotify_profile['id']}}" target="_blank" class="text-decoration-none">{{spotify_profile["display_name"]}}</a></p>
+                        <p class="mb-1"><span class="fw-bold mb-0">Email: </span>{{rokolify_profile["email"]}} </p>
+                        <p class="mb-1"><span class="fw-bold mb-0">Nombre de usuario: </span>{{rokolify_profile["name"]}} </p>
                     </div>
                 </div>
-            
         </section>
         
-        <!-- Reproductor -->
-        
-        <section class="p-4 border rounded-3">                
-            <h2 class="fs-4">Reproductor activo</h2>
-            
-                {% if active_device %}
 
-                    <div class="d-flex flex-row align-items-center my-3 pe-2 gap-3">
-                        {% if active_device["type"] == "Computer" %}
-                            <img src="{{url_for('static', filename='img/laptop.svg')}}" class="item-image rounded-start" style="width:50px;" alt="item-image">
-                        {% elif active_device["type"] == "Smartphone" %}
-                            <img src="{{url_for('static', filename='img/phone.svg')}}" class="item-image rounded-start" style="width:50px;" alt="item-image">
-                        {% elif active_device["type"] == "Speaker" %}
-                            <img src="{{url_for('static', filename='img/speaker.svg')}}" class="item-image rounded-start" style="width:50px;" alt="item-image">
+        {% if not linked_spotify_account_validation %}
+
+            <!-- Enlazar cuenta de Spotify -->
+            
+            <section class="p-4 border rounded-3">                
+        
+                <h2 class="fs-4">Cuenta de Spotify vinculada</h2>
+                
+                <div class="w-100 justify-content-between my-3">
+                    <h5 class="card-title fs-5 fw-semibold mb-0">No hay ninguna cuenta de Spotify vinculada</h5>
+                </div>
+                <a class="btn btn-primary" href="{{ url_for('spotify_auth.spotify_login') }}" role="button">
+                    <img src="{{url_for('static', filename='img/bxl-spotify.svg')}}" alt="spotify-icon">
+                    Vincula tu cuenta de Spotify
+                </a>
+                <a tabindex="0" class="btn btn-secondary rounded-pill py-0 px-1 ms-3" data-bs-container="body" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="En caso de tener una sesión de Spotify vinculada en el navegador, tu cuenta de Rokolify se vinculará automaticamente a esa sesión de Spotify. Para seleccionar otra cuenta de Spotify primero debes cerrar sesión desde la pagina web de Spotify.">
+                    <img src="{{url_for('static', filename='img/question-lg.svg')}}">
+                </a>
+        
+            </section>
+
+        {% else %}
+
+            <!-- Datos cuenta de Spotify -->
+            
+            <section class="p-4 border rounded-3">                
+                <h2 class="fs-4">Cuenta de Spotify vinculada</h2>
+                
+                    <div class="d-flex flex-row align-items-center mt-3 pe-2 gap-3">
+                        
+                        {% if spotify_profile['images'] %}
+                            <img src="{{ spotify_profile['images'][0]['url'] }}" class="align-self-start rounded-circle" style="width:65px;" alt="user-image">
+                        {% else %}
+                            <img src="{{url_for('static', filename='img/bxs-user.svg')}}" class="align-self-start" style="width:65px;" alt="user-image">
                         {% endif %}
                         <div class="w-100 justify-content-between">
-                            <h5 class="card-title fs-5 fw-semibold mb-0">{{ active_device["name"] }}</h5>
+                            <p class="mb-1"><span class="fw-bold mb-0">Email: </span>{{spotify_profile["email"]}} </p>
+                            <p class="mb-1"><span class="fw-bold mb-0">Nombre de usuario: </span>{{spotify_profile["display_name"]}} </p>
+                            <p class="mb-1"><span class="fw-bold mb-0">ID de usuario: </span>{{spotify_profile["id"]}} </p>
+                            <p class="mb-1"><span class="fw-bold mb-0">Perfil de Spotify: </span> <a href="https://open.spotify.com/user/{{spotify_profile['id']}}" target="_blank" class="text-decoration-none">{{spotify_profile["display_name"]}}</a></p>
                         </div>
+                        
                     </div>
-                
-                {% else %}
-                    <div class="d-flex flex-row align-items-center mb-2 pe-2 gap-3">
-                        <div class="w-100 justify-content-between">
-                            <h5 class="card-title fs-5 fw-semibold mb-0">No hay ningún reproductor activo</h5>
-                        </div>
-                    </div>
-                {% endif %}
 
-        </section>
+                    <button id="unlink-spotify-account-btn" class="btn btn-danger mt-3" type="button">
+                        <img src="{{url_for('static', filename='img/bxl-spotify.svg')}}" alt="spotify-icon">
+                        Desvincula tu cuenta de Spotify
+                    </button>
+                
+            </section>
+            
+            <!-- Reproductor activo -->
+            
+            <section class="p-4 border rounded-3">                
+                <h2 class="fs-4">Reproductor activo</h2>
+                
+                    {% if active_device %}
+
+                        <div class="d-flex flex-row align-items-center my-3 pe-2 gap-3">
+                            {% if active_device["type"] == "Computer" %}
+                                <img src="{{url_for('static', filename='img/laptop.svg')}}" class="item-image rounded-start" style="width:50px;" alt="item-image">
+                            {% elif active_device["type"] == "Smartphone" %}
+                                <img src="{{url_for('static', filename='img/phone.svg')}}" class="item-image rounded-start" style="width:50px;" alt="item-image">
+                            {% elif active_device["type"] == "Speaker" %}
+                                <img src="{{url_for('static', filename='img/speaker.svg')}}" class="item-image rounded-start" style="width:50px;" alt="item-image">
+                            {% endif %}
+                            <div class="w-100 justify-content-between">
+                                <h5 class="card-title fs-5 fw-semibold mb-0">{{ active_device["name"] }}</h5>
+                            </div>
+                        </div>
+                    
+                    {% else %}
+                        <div class="d-flex flex-row align-items-center mb-2 pe-2 gap-3">
+                            <div class="w-100 justify-content-between">
+                                <h5 class="card-title fs-5 fw-semibold mb-0">No hay ningún reproductor activo</h5>
+                            </div>
+                        </div>
+                    {% endif %}
+
+            </section>
+
+            <!-- Reproductores disponibles -->
+            
+            <section class="p-4 border rounded-3">                
+                <h2 class="fs-4">Reproductores disponibles</h2>
+                
+                    {% if available_devices %}
+
+                        <div class="row row-cols-auto row-cols-lg-3">
+                            {% for device in available_devices %}
         
+                                <div class="col d-flex flex-row align-items-center my-3 pe-2 gap-3">
+                                    {% if device["type"] == "Computer" %}
+                                        <img src="{{url_for('static', filename='img/laptop.svg')}}" class="item-image rounded-start" style="width:50px;" alt="item-image">
+                                    {% elif device["type"] == "Smartphone" %}
+                                        <img src="{{url_for('static', filename='img/phone.svg')}}" class="item-image rounded-start" style="width:50px;" alt="item-image">
+                                    {% elif device["type"] == "Speaker" %}
+                                        <img src="{{url_for('static', filename='img/speaker.svg')}}" class="item-image rounded-start" style="width:50px;" alt="item-image">
+                                    {% endif %}
+                                    <div class="w-100 justify-content-between">
+                                        <h5 class="card-title fs-5 fw-semibold mb-0">{{ device["name"] }}</h5>
+                                    </div>
+                                </div>
+                            
+                            {% endfor %}
+                        </div>
+
+                    
+                    {% else %}
+                        <div class="d-flex flex-row align-items-center mb-2 pe-2 gap-3">
+                            <div class="w-100 justify-content-between">
+                                <h5 class="card-title fs-5 fw-semibold mb-0">No hay reproductores disponibles</h5>
+                            </div>
+                        </div>
+                    {% endif %}
+
+            </section>
+        
+        {% endif %}
+
     </div>
 
 {% endblock %}
 
 {% block scripts %}
     {{ super() }}
+    <script src="{{url_for('static', filename='js/tooltips_init.js')}}"></script>
+
+    <script> let linkedpotifyAccountValidation = "{{linked_spotify_account_validation}}"; </script>
     <script> let devicesValidation = "{{available_devices_existence}}"; </script>
+    
     <script src="{{url_for('static', filename='js/owner_scripts/owner_devices_alert.js')}}"></script>
+    <script src="{{url_for('static', filename='js/owner_scripts/spotify_unlink_btn.js')}}"></script>
 {% endblock %}

@@ -1,35 +1,42 @@
 from flask import Blueprint, render_template, current_app, url_for, session, send_file, request, Response, jsonify
 from itsdangerous import URLSafeSerializer
 import json
-from ..services.owner_account_service import get_user_playlists, get_user_profile
-from ..services.owner_playback_service import get_available_devices
+from ..services.spotify_user_account_service import get_user_playlists, get_user_profile
+from ..services.spotify_user_playback_service import get_available_devices
 from ..services.rokolify_users_service import get_user_data, update_guest_permission, update_playlists_access_settings, update_user
 from ..blueprints.spotify_auth import get_access_token
 from ..utilities import generate_qr_img
+from ..validators import login_required, user_has_linked_spotify_account
 
 
 owner_bp = Blueprint("owner_bp", __name__)
 
 
 @owner_bp.get("/owner/account_settings")
+@login_required
 def account_settings():
 
     # User data:
     owner_email = session.get("owner_email")
     user_data = get_user_data(owner_email)
-    access_token = get_access_token(user_data)
+    spotify_access_token = get_access_token(user_data)
 
-    profile_succes, profile_response = get_user_profile(access_token)
+    profile_succes, profile_response = get_user_profile(spotify_access_token)
     spotify_profile = profile_response if profile_succes else {}
     
-    devices_succes, devices_response = get_available_devices(access_token)
-    available_devices = devices_response if devices_succes else None
+    devices_succes, devices_response = get_available_devices(spotify_access_token)
+    available_devices = devices_response if devices_succes else []
     active_devices = [device for device in available_devices if device["is_active"]]
 
     context = {
-        "current_page": "account_settings",
-        "available_devices_existence": bool(available_devices),
+        "rokolify_profile": {
+            "email": user_data["email"],
+            "name": user_data["name"],
+            "profile_picture": user_data["profile_picture"]
+        },
+        "linked_spotify_account_validation": user_has_linked_spotify_account(user_data),
         "spotify_profile": spotify_profile,
+        "available_devices_existence": bool(available_devices),
         "available_devices": available_devices,
         "active_device": active_devices[0] if active_devices else None
     }
@@ -38,22 +45,23 @@ def account_settings():
 
 
 @owner_bp.get("/owner/guest_settings")
+@login_required
 def owner_settings_for_guests():
 
     # User data:
     owner_email = session.get("owner_email")
     user_data = get_user_data(owner_email)
-    access_token = get_access_token(user_data)
+    spotify_access_token = get_access_token(user_data)
 
     guest_url = generate_guest_url(owner_email)
     
     playlists_amount_to_show = 20
     # TODO: manejar error si no se encuentra data
-    playlists_succes, playlists_response = get_user_playlists(access_token, limit=playlists_amount_to_show)
+    playlists_succes, playlists_response = get_user_playlists(spotify_access_token, limit=playlists_amount_to_show)
     owner_playlists = playlists_response if playlists_succes else []
 
     # TODO: manejar error si no se encuentra data
-    devices_succes, devices_response = get_available_devices(access_token)
+    devices_succes, devices_response = get_available_devices(spotify_access_token)
     available_devices = devices_response if devices_succes else None
 
     # TODO: manejar error si no se encuentra data
@@ -63,11 +71,11 @@ def owner_settings_for_guests():
     playlists_settings = json.dumps(playlists_access_settings)
 
     context = {
-        "current_page": "settings_for_guests",
         "guest_url": guest_url,
         "get_qr_url": url_for("owner_bp.get_qr"),
-        "owner_playlists": owner_playlists,
+        "linked_spotify_account_validation": user_has_linked_spotify_account(user_data),
         "available_devices_existence": bool(available_devices),
+        "owner_playlists": owner_playlists,
 
         # User guest settings:
         "allow_guest_access": guest_permissions["allow_guest_access"],
@@ -84,15 +92,16 @@ def owner_settings_for_guests():
 
 
 @owner_bp.get("/owner/automate_player")
+@login_required
 def automate_player():
     context = {
-        "current_page": "automate_player",
     }
 
     return render_template("owner_settings_templates/owner_automate_player.html", **context)
 
 
 @owner_bp.get("/owner/get_qr")
+@login_required
 def get_qr():
 
     guest_url = request.args.get("guest_url")
@@ -102,6 +111,7 @@ def get_qr():
 
 
 @owner_bp.put("/owner/api/guest_permissions")
+@login_required
 def update_guest_permissions():
 
     owner_email = session.get("owner_email")
@@ -132,6 +142,7 @@ def update_guest_permissions():
 
 
 @owner_bp.put("/owner/api/playlists_settings")
+@login_required
 def update_playlists_settings():
 
     owner_email = session.get("owner_email")
@@ -155,19 +166,30 @@ def update_playlists_settings():
 
 
 @owner_bp.get("/owner/api/get_playlists/<int:offset>/<int:limit>")
+@login_required
 def get_more_playlists(offset, limit):
 
     # User data:
     owner_email = session.get("owner_email")
     user_data = get_user_data(owner_email)
-    access_token = get_access_token(user_data)
+    spotify_access_token = get_access_token(user_data)
 
-    success, allowed_playlists = get_user_playlists(access_token, offset=offset, limit=limit)
+    success, allowed_playlists = get_user_playlists(spotify_access_token, offset=offset, limit=limit)
 
     if success:
         return jsonify({"success": True, "status_code": 200, "playlists": allowed_playlists})
     else:
         return {"success": False, "message":"Error al obtener las playlists"}
+
+
+@owner_bp.get("/owner/api/unlink_spotify_account")
+@login_required
+def unlink_spotify_account():
+
+    owner_email = session.get("owner_email")
+    update_user(owner_email, {"spotify_access_token_data": {}})
+
+    return jsonify({"success": True, "status_code": 200})
 
 
 def generate_guest_url(owner_email):

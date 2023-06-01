@@ -1,9 +1,10 @@
 from flask import Blueprint, render_template, request, current_app, jsonify, session, redirect, url_for
-from ..services.owner_account_service import get_user_playlists
+from ..services.spotify_user_account_service import get_user_playlists
 from ..services.spotify_catalog_service import get_playlist, get_playlist_items, search_tracks_in_catalog, get_track, get_artist, check_if_track_is_in_playlist
-from ..services.owner_playback_service import add_item_to_queue, get_user_queue, get_available_devices, skip_to_next, push_to_player
+from ..services.spotify_user_playback_service import add_item_to_queue, get_user_queue, get_available_devices, skip_to_next, push_to_player
 from ..services.rokolify_users_service import get_user_data, check_if_track_was_recently_added_by_guests, add_recently_added_track_by_guest
 from ..blueprints.spotify_auth import get_access_token
+from ..validators import login_required, owner_with_linked_spotify_account_required
 from itsdangerous import URLSafeSerializer
 from datetime import datetime
 from urllib.parse import urlparse
@@ -13,6 +14,7 @@ guest_bp = Blueprint("guest_bp", __name__)
 
 
 @guest_bp.get("/guest/gateway/<token>")
+@owner_with_linked_spotify_account_required
 def guest_gateway(token):
     serializer = URLSafeSerializer(current_app.secret_key)
     data = serializer.loads(token)
@@ -25,6 +27,8 @@ def guest_gateway(token):
 
 
 @guest_bp.get("/guest/allowed_playlists")
+@owner_with_linked_spotify_account_required
+@login_required
 def show_allowed_playlists():
 
     #? Validaciones:
@@ -56,12 +60,14 @@ def show_allowed_playlists():
 
 
 @guest_bp.get("/guest/playlist/<playlist_id>")
+@owner_with_linked_spotify_account_required
+@login_required
 def show_playlist_items(playlist_id):
 
     #? Validaciones:
     owner_email = session.get("owner_email")
     user_data = get_user_data(owner_email)
-    access_token = get_access_token(user_data)
+    spotify_access_token = get_access_token(user_data)
 
     guest_permissions = user_data["guest_settings"]["guest_permissions"]
     free_mode = guest_permissions["free_mode"]
@@ -78,7 +84,7 @@ def show_playlist_items(playlist_id):
             return render_template("guest_templates/guest_no_resources_allowed.html")
 
     #? Datos de la playlist:
-    success, response = get_playlist(access_token, playlist_id)
+    success, response = get_playlist(spotify_access_token, playlist_id)
 
     playlist_name = response["name"] if success else []
     playlist_items = response["tracks"]["items"] if success else []
@@ -94,6 +100,8 @@ def show_playlist_items(playlist_id):
 
 
 @guest_bp.get("/guest/search_track")
+@owner_with_linked_spotify_account_required
+@login_required
 def guest_search_page():
 
     owner_email = session.get("owner_email")
@@ -118,6 +126,8 @@ def guest_search_page():
 
 
 @guest_bp.post("/guest/api/queue")
+@owner_with_linked_spotify_account_required
+@login_required
 def add_item_to_owner_queue():
 
     request_body = request.json
@@ -128,7 +138,7 @@ def add_item_to_owner_queue():
     # User data:
     owner_email = session.get("owner_email")
     user_data = get_user_data(owner_email)
-    access_token = get_access_token(user_data)
+    spotify_access_token = get_access_token(user_data)
 
     #? Validaciones -------------------------------------------------------------------------------
     guest_permissions = user_data["guest_settings"]["guest_permissions"]
@@ -149,7 +159,7 @@ def add_item_to_owner_queue():
     if request.referrer.startswith(current_app.config["BASE_URL"] + "/guest/playlist/"):
         playlist_id = urlparse(request.referrer).path.split('/')[-1]
         playlist_track_index = request_body["playlist_track_index"]
-        track_validation = check_if_track_is_in_playlist(access_token, track_uri, playlist_id, playlist_track_index)
+        track_validation = check_if_track_is_in_playlist(spotify_access_token, track_uri, playlist_id, playlist_track_index)
         if not track_validation:
             return {"success": False, "message": "La canción que se intenta agregar no se encuentra en la playlist"}
     
@@ -160,7 +170,7 @@ def add_item_to_owner_queue():
     #? Se agrega la canción a la cola ----------------------------------------------------------------
 
     # Se intenta añadir la canción a la cola del reproductor activo:
-    success, response = add_item_to_queue(access_token, track_uri)
+    success, response = add_item_to_queue(spotify_access_token, track_uri)
     if success:
         add_recently_added_track_by_guest(user_data, track_uri)  # Se actualiza el registro de canciones agregadas recientemente por invitados
         return jsonify({"success":True, "message": "Canción agregada a la cola", "status_code": 200})
@@ -170,7 +180,7 @@ def add_item_to_owner_queue():
     if response["status_code"] == 404:  # Error provocado por no encontrar dispositivos activos
 
         # Obtengo los dispositivos disponibles:
-        get_devices_succes, available_devices = get_available_devices(access_token)
+        get_devices_succes, available_devices = get_available_devices(spotify_access_token)
 
         if not get_devices_succes:
             return jsonify({"success": False, "message": "Error al obtener dispositivos disponibles", "status_code": available_devices["status_code"]})
@@ -182,17 +192,17 @@ def add_item_to_owner_queue():
 
         try:
             # Se intenta agregar a la cola y saltear a la siguiente para reproducir la canción agregada:
-            add_to_queue_succes, _ = add_item_to_queue(access_token, track_uri, device_id=target_device_id)
+            add_to_queue_succes, _ = add_item_to_queue(spotify_access_token, track_uri, device_id=target_device_id)
             if not add_to_queue_succes:
                 raise Exception("Error al agregar el item a la cola")
 
-            skip_succes, _ = skip_to_next(access_token, device_id=target_device_id)
+            skip_succes, _ = skip_to_next(spotify_access_token, device_id=target_device_id)
             if not skip_succes:
                 raise Exception("Error al pasar de canción")
         
         except:
             # Si no se logra agregar a la cola y saltear se fuerza la cancion al reproductor:
-            push_success, push_response = push_to_player(access_token, "track", track_uri, device_id=target_device_id)
+            push_success, push_response = push_to_player(spotify_access_token, "track", track_uri, device_id=target_device_id)
             if not push_success:
                 return jsonify({"success": False, "message": "No se puede reproducir la canción", "status_code": push_response["status_code"]})
 
@@ -205,14 +215,16 @@ def add_item_to_owner_queue():
 
 
 @guest_bp.get("/guest/api/queue")
+@owner_with_linked_spotify_account_required
+@login_required
 def get_owner_queue():
 
     # User data:
     owner_email = session.get("owner_email")
     user_data = get_user_data(owner_email)
-    access_token = get_access_token(user_data)
+    spotify_access_token = get_access_token(user_data)
     
-    success, response = get_user_queue(access_token)
+    success, response = get_user_queue(spotify_access_token)
 
     if success:
         response.update({"success": True, "status_code": 200})
@@ -223,14 +235,16 @@ def get_owner_queue():
 
 
 @guest_bp.get("/guest/api/track/<string:track_id>")
+@owner_with_linked_spotify_account_required
+@login_required
 def get_track_data(track_id):
 
     # User data:
     owner_email = session.get("owner_email")
     user_data = get_user_data(owner_email)
-    access_token = get_access_token(user_data)
+    spotify_access_token = get_access_token(user_data)
 
-    track_success, track_response = get_track(access_token, track_id)
+    track_success, track_response = get_track(spotify_access_token, track_id)
     if not track_success:
         return jsonify({"success": False, "message":"Error al obtener los datos de la canción", "status_code": track_response["status_code"]})
     
@@ -258,7 +272,7 @@ def get_track_data(track_id):
 
     track_data["artists"] = []
     for artist in track_response["artists"]:
-        artist_success, artist_response = get_artist(access_token, artist["id"])
+        artist_success, artist_response = get_artist(spotify_access_token, artist["id"])
         if not artist_success:
             continue
         
@@ -273,14 +287,16 @@ def get_track_data(track_id):
 
 
 @guest_bp.get("/guest/api/search_in_catalog/<string:search>")
+@owner_with_linked_spotify_account_required
+@login_required
 def search_in_catalog(search):
 
     # User data:
     owner_email = session.get("owner_email")
     user_data = get_user_data(owner_email)
-    access_token = get_access_token(user_data)
+    spotify_access_token = get_access_token(user_data)
     
-    success, response = search_tracks_in_catalog(access_token, search)
+    success, response = search_tracks_in_catalog(spotify_access_token, search)
 
     if success:
         response.update({"success": True, "status_code": 200})
@@ -290,14 +306,16 @@ def search_in_catalog(search):
 
 
 @guest_bp.get("/guest/api/get_playlist_items/<string:playlist_id>/<int:offset>/<int:limit>")
+@owner_with_linked_spotify_account_required
+@login_required
 def get_more_playlist_items(playlist_id, offset, limit):
     
     # User data:
     owner_email = session.get("owner_email")
     user_data = get_user_data(owner_email)
-    access_token = get_access_token(user_data)
+    spotify_access_token = get_access_token(user_data)
 
-    success, response = get_playlist_items(access_token, playlist_id, offset=offset, limit=limit)
+    success, response = get_playlist_items(spotify_access_token, playlist_id, offset=offset, limit=limit)
 
     if success:
         response.update({"success": True, "status_code": 200})
@@ -307,6 +325,8 @@ def get_more_playlist_items(playlist_id, offset, limit):
 
 
 @guest_bp.get("/guest/api/get_playlists/<int:offset>/<int:limit>")
+@owner_with_linked_spotify_account_required
+@login_required
 def get_more_playlists(offset, limit):
     
     owner_email = session.get("owner_email")
@@ -321,9 +341,9 @@ def get_more_playlists(offset, limit):
 
 def get_allowed_playlists(user_data, offset=0, limit=20):
 
-    access_token = get_access_token(user_data)
+    spotify_access_token = get_access_token(user_data)
 
-    success, response = get_user_playlists(access_token, offset=offset, limit=limit)
+    success, response = get_user_playlists(spotify_access_token, offset=offset, limit=limit)
     owner_playlists = response["items"] if success else []
     next_playlists_url = response["next"] if success else ""
 

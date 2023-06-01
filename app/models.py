@@ -1,8 +1,10 @@
 
 class User(dict):
-    def __init__(self, email:str, access_token_data:dict) -> None:
+    def __init__(self, email:str, name:str, profile_picture_url:str) -> None:
         self["email"] = email
-        self["access_token_data"] = access_token_data
+        self["name"] = name
+        self["profile_picture"] = profile_picture_url
+        self["spotify_access_token_data"] = {}
         self["guest_settings"] = {
             "time_to_re_add_same_track": 20,  # Tiempo expresado en minutos
             "guest_permissions": {
@@ -19,8 +21,8 @@ class User(dict):
 Ejemplo de documento de usuario:
 
 {
-    "email": "user@gmail.com",
-    "acces_token_data": {
+    "email": "user@gmail.com",      # El email sirve como identificador del usuario
+    "spotify_access_token_data": {
         "access_token":"...",
         "token_type":"Bearer",
         "expires_in":"3600",

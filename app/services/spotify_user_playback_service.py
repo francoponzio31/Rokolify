@@ -7,7 +7,7 @@ Este modulo contiene funciones que permiten obtener información o manipular el 
 """
 
 
-def get_available_devices(access_token):
+def get_available_devices(spotify_access_token):
 
     """
     Retorna una lista con datos de los reproductores activos.
@@ -16,7 +16,7 @@ def get_available_devices(access_token):
     url = "https://api.spotify.com/v1/me/player/devices"
 
     headers = {
-        "Authorization": f"Bearer {access_token}"
+        "Authorization": f"Bearer {spotify_access_token}"
     }
 
     response = requests.get(url, headers=headers)
@@ -31,7 +31,7 @@ def get_available_devices(access_token):
         return False, {"status_code": response.status_code}
 
 
-def get_playback_state(access_token):
+def get_playback_state(spotify_access_token):
 
     """
     Retorna datos del reproductor activo actualmente. Debe existir un reproductor activo para que la request tenga éxito.
@@ -40,7 +40,7 @@ def get_playback_state(access_token):
     url = "https://api.spotify.com/v1/me/player"
 
     headers = {
-        "Authorization": f"Bearer {access_token}"
+        "Authorization": f"Bearer {spotify_access_token}"
     }
 
     response = requests.get(url, headers=headers)
@@ -54,7 +54,7 @@ def get_playback_state(access_token):
         return False, {"status_code": response.status_code}
 
 
-def pause_playback(access_token):
+def pause_playback(spotify_access_token):
 
     """
     Pausa la reproducción del reproductor activo. Debe existir un reproductor activo reproduciendose.
@@ -63,7 +63,7 @@ def pause_playback(access_token):
     url = "https://api.spotify.com/v1/me/player/pause"
 
     headers = {
-        "Authorization": f"Bearer {access_token}",
+        "Authorization": f"Bearer {spotify_access_token}",
         "Content-Type": "application/json"
     }
 
@@ -79,7 +79,7 @@ def pause_playback(access_token):
         return False, {"status_code": response.status_code}
 
 
-def resume_playback(access_token):
+def resume_playback(spotify_access_token):
 
     """
     Reanuda la reproducción del reproductor activo. Debe existir un reproductor activo pausado.
@@ -88,7 +88,7 @@ def resume_playback(access_token):
     url = "https://api.spotify.com/v1/me/player/play"
 
     headers = {
-        "Authorization": f"Bearer {access_token}",
+        "Authorization": f"Bearer {spotify_access_token}",
         "Content-Type": "application/json"
     }
 
@@ -104,7 +104,7 @@ def resume_playback(access_token):
         return False, {"status_code": response.status_code}
 
 
-def push_to_player(access_token, element_type, uri, device_id=None):
+def push_to_player(spotify_access_token, element_type, uri, device_id=None):
 
     """
     Inserta una canción o playlist para reproducrise inmediatamente. Al ejecutarse limpia la cola de reproducción.
@@ -123,7 +123,7 @@ def push_to_player(access_token, element_type, uri, device_id=None):
         return False, {"error": "Argumentos inválidos"}
     
     headers = {
-        "Authorization": f"Bearer {access_token}",
+        "Authorization": f"Bearer {spotify_access_token}",
         "Content-Type": "application/json"
     }
 
@@ -138,7 +138,7 @@ def push_to_player(access_token, element_type, uri, device_id=None):
         return False, {"status_code": response.status_code}
 
 
-def get_user_queue(access_token):
+def get_user_queue(spotify_access_token):
 
     #!: La respuesta de la api solo trae los primeros 20 elementos de las cola de reproducción.
 
@@ -151,7 +151,7 @@ def get_user_queue(access_token):
     url = "https://api.spotify.com/v1/me/player/queue"
 
     headers = {
-        "Authorization": f"Bearer {access_token}",
+        "Authorization": f"Bearer {spotify_access_token}",
         "Content-Type": "application/json"
     }
 
@@ -166,14 +166,14 @@ def get_user_queue(access_token):
         return False, {"status_code": response.status_code}
 
 
-def add_item_to_queue(access_token, item_uri, device_id=None):
+def add_item_to_queue(spotify_access_token, item_uri, device_id=None):
 
     """
     Añade una canción a la cola de reproducción.
     """
 
     headers = {
-        "Authorization": f"Bearer {access_token}",
+        "Authorization": f"Bearer {spotify_access_token}",
         "Content-Type": "application/json"
     }
 
@@ -189,7 +189,7 @@ def add_item_to_queue(access_token, item_uri, device_id=None):
 
     return False, {"status_code": response.status_code}
 
-def add_playlist_to_queue(access_token, playlist_id, device_id=None):
+def add_playlist_to_queue(spotify_access_token, playlist_id, device_id=None):
 
     #TODO: Desarrollar esta funcion para automatizar el reproductor
 
@@ -202,7 +202,7 @@ def add_playlist_to_queue(access_token, playlist_id, device_id=None):
 
     # Headers de la solicitud, incluyendo el token de acceso
     headers = {
-        "Authorization": f"Bearer {access_token}",
+        "Authorization": f"Bearer {spotify_access_token}",
         "Content-Type": "application/json"
     }
 
@@ -222,14 +222,14 @@ def add_playlist_to_queue(access_token, playlist_id, device_id=None):
     return False, {"status_code": response.status_code}
 
 
-def skip_to_next(access_token, device_id=None):
+def skip_to_next(spotify_access_token, device_id=None):
 
     """
     Avanza a la siguiente canción en la cola de reproducción.
     """
 
     headers = {
-        "Authorization": f"Bearer {access_token}",
+        "Authorization": f"Bearer {spotify_access_token}",
         "Content-Type": "application/json"
     }
 
