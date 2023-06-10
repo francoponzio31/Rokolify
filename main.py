@@ -3,6 +3,7 @@ from app import create_app
 from app.blueprints.spotify_auth import get_access_token
 import requests 
 from app.services.rokolify_users_service import get_user_data
+from app.validators import login_required
 
 
 app = create_app()
@@ -20,6 +21,12 @@ def index():
 def login():
     return render_template("login_templates/rokolify_login.html")
 
+
+@app.get("/logout")
+@login_required
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
 
 
 #? De aca para abajo endpoints de testing

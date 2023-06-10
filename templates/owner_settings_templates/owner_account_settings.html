@@ -27,13 +27,19 @@
         <section class="p-4 border rounded-3">                
             <h2 class="fs-4">Perfil de Rokolify</h2>
             
-                <div class="d-flex flex-row align-items-center mt-3 pe-2 gap-3">
-                    <img src="{{ rokolify_profile['profile_picture'] }}" class="align-self-start rounded-circle" style="width:65px;" alt="user-image">      
-                    <div class="w-100 justify-content-between">
-                        <p class="mb-1"><span class="fw-bold mb-0">Email: </span>{{rokolify_profile["email"]}} </p>
-                        <p class="mb-1"><span class="fw-bold mb-0">Nombre de usuario: </span>{{rokolify_profile["name"]}} </p>
-                    </div>
+            <div class="d-flex flex-row align-items-center mt-3 pe-2 gap-3">
+                <img src="{{ rokolify_profile['profile_picture'] }}" class="align-self-start rounded-circle" style="width:65px;" alt="user-image">      
+                <div class="w-100 justify-content-between">
+                    <p class="mb-1"><span class="fw-bold mb-0">Email: </span>{{rokolify_profile["email"]}} </p>
+                    <p class="mb-1"><span class="fw-bold mb-0">Nombre de usuario: </span>{{rokolify_profile["name"]}} </p>
+
+                    <a class="btn btn-danger mt-3" href="{{ url_for('logout') }}" role="button">
+                        <img src="{{url_for('static', filename='img/bx-log-out.svg')}}" alt="logout-icon">
+                        Cerrar sesión
+                    </a>
                 </div>
+            </div>
+            
         </section>
         
 
@@ -46,16 +52,18 @@
                 <h2 class="fs-4">Cuenta de Spotify vinculada</h2>
                 
                 <div class="w-100 justify-content-between my-3">
-                    <h5 class="card-title fs-5 fw-semibold mb-0">No hay ninguna cuenta de Spotify vinculada</h5>
+                    <h5 class="card-title fs-5 fw-semibold mb-0">
+                        No hay ninguna cuenta de Spotify vinculada
+                        <a tabindex="0" class="btn btn-secondary rounded-pill py-0 px-1 ms-3" data-bs-container="body" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="En caso de tener una sesión de Spotify vinculada en el navegador, tu cuenta de Rokolify se vinculará automaticamente a esa sesión de Spotify. Para seleccionar otra cuenta de Spotify primero debes cerrar sesión desde la pagina web de Spotify.">
+                            <img src="{{url_for('static', filename='img/question-lg.svg')}}">
+                        </a>
+                    </h5>
                 </div>
+                
                 <a class="btn btn-primary" href="{{ url_for('spotify_auth.spotify_login') }}" role="button">
                     <img src="{{url_for('static', filename='img/bxl-spotify.svg')}}" alt="spotify-icon">
                     Vincula tu cuenta de Spotify
                 </a>
-                <a tabindex="0" class="btn btn-secondary rounded-pill py-0 px-1 ms-3" data-bs-container="body" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="En caso de tener una sesión de Spotify vinculada en el navegador, tu cuenta de Rokolify se vinculará automaticamente a esa sesión de Spotify. Para seleccionar otra cuenta de Spotify primero debes cerrar sesión desde la pagina web de Spotify.">
-                    <img src="{{url_for('static', filename='img/question-lg.svg')}}">
-                </a>
-        
             </section>
 
         {% else %}
@@ -77,14 +85,14 @@
                             <p class="mb-1"><span class="fw-bold mb-0">Nombre de usuario: </span>{{spotify_profile["display_name"]}} </p>
                             <p class="mb-1"><span class="fw-bold mb-0">ID de usuario: </span>{{spotify_profile["id"]}} </p>
                             <p class="mb-1"><span class="fw-bold mb-0">Perfil de Spotify: </span> <a href="https://open.spotify.com/user/{{spotify_profile['id']}}" target="_blank" class="text-decoration-none">{{spotify_profile["display_name"]}}</a></p>
+                            <button id="unlink-spotify-account-btn" class="btn btn-danger mt-3" type="button">
+                                <img src="{{url_for('static', filename='img/bxl-spotify.svg')}}" alt="spotify-icon">
+                                Desvincula tu cuenta de Spotify
+                            </button>
                         </div>
                         
                     </div>
 
-                    <button id="unlink-spotify-account-btn" class="btn btn-danger mt-3" type="button">
-                        <img src="{{url_for('static', filename='img/bxl-spotify.svg')}}" alt="spotify-icon">
-                        Desvincula tu cuenta de Spotify
-                    </button>
                 
             </section>
             
