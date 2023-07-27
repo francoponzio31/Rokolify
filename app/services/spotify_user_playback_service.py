@@ -236,7 +236,7 @@ def skip_to_next(spotify_access_token, device_id=None):
     if device_id:
         url = f"https://api.spotify.com/v1/me/player/next?device_id={device_id}"
     else:
-        url = f"https://api.spotify.com/v1/me/player/next"
+        url = "https://api.spotify.com/v1/me/player/next"
 
     response = requests.post(url, headers=headers)
 

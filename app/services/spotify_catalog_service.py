@@ -6,13 +6,16 @@ Este modulo contiene funciones que permiten obtener información del cátalogo d
 """
 
 
-def get_playlist(spotify_access_token, playlist_id):
+def get_playlist(spotify_access_token, playlist_id, fields=""):
 
     """
     Retorna información de los items de una playlist.
     """
 
-    url = f"https://api.spotify.com/v1/playlists/{playlist_id}"
+    if fields:
+        url = f"https://api.spotify.com/v1/playlists/{playlist_id}?fields={fields}"
+    else:
+        url = f"https://api.spotify.com/v1/playlists/{playlist_id}"
 
     headers = {
         "Authorization": f"Bearer {spotify_access_token}",
@@ -37,6 +40,30 @@ def get_playlist_items(spotify_access_token, playlist_id, offset=0, limit=20):
     """
 
     url = f"https://api.spotify.com/v1/playlists/{playlist_id}/tracks?offset={offset}&limit={limit}"
+
+    headers = {
+        "Authorization": f"Bearer {spotify_access_token}",
+        "Content-Type": "application/json"
+    }
+
+    response = requests.get(url, headers=headers)
+
+    if response.status_code == 200:
+        # La solicitud fue exitosa
+        data = response.json()
+        return True, data
+    
+    else:
+        return False, {"status_code": response.status_code}
+
+
+def check_if_users_follow_playlist(spotify_access_token, users_id, playlist_id):
+    
+    """
+    Chequea si una lista de usuarios sigue una playlist. La lista de usuarios debe ser pasada como una lista separada por comas de id de usuario de Spotify, valor de ejemplo: "jmperezperez,thelinmichael,wizzler".
+    """
+
+    url = f"https://api.spotify.com/v1/playlists/{playlist_id}/followers/contains?ids={users_id}"
 
     headers = {
         "Authorization": f"Bearer {spotify_access_token}",
@@ -154,3 +181,23 @@ def check_if_track_is_in_playlist(spotify_access_token, track_uri, playlist_id, 
     track_is_in_playlist = playlist_item["track"]["uri"] == track_uri
 
     return track_is_in_playlist
+
+
+def check_if_playlist_is_in_user_playlists(spotify_access_token, user_id, playlist_id):
+
+    """
+        Valida que la playlist cuyo id se pasa por parametro este entre las playlists del usuario dado, esto es, que el usuario siga o sea propietario de la playlist.
+    """
+
+    # Se chequea si el usuario es propietario:
+    owning_success, owning_response = get_playlist(spotify_access_token, playlist_id, fields="owner.id")
+    if owning_success and owning_response["owner"]["id"] == user_id:
+        return True
+
+    # Se chequea si el usuario sigue a la playlist:
+    follows_success, follows_response = check_if_users_follow_playlist(spotify_access_token, user_id, playlist_id)
+    if follows_success and any(follows_response):
+        return True
+
+    # Si nada se cumple se toma como que la playlist no esta entre las playlist del usuario:
+    return False

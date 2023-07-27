@@ -1,20 +1,15 @@
-from flask import session, request, current_app, redirect, jsonify, url_for, render_template
+from flask import session, current_app, redirect, url_for, render_template, jsonify
 from app import create_app
-from app.blueprints.spotify_auth import get_access_token
-import requests 
-from app.services.rokolify_users_service import get_user_data
-from app.validators import login_required
+from app.validators import host_session_required
 
 
 app = create_app()
 
+
 @app.get("/")
+@host_session_required
 def index():
-    # Se chequea que el usuario este logueado
-    if session.get("owner_email"):
-        return redirect(url_for("owner_bp.account_settings"))
-    else:
-        return redirect(url_for("login"))
+    return redirect(url_for("owner_bp.account_settings"))
 
 
 @app.get("/login")
@@ -23,37 +18,33 @@ def login():
 
 
 @app.get("/logout")
-@login_required
+@host_session_required
 def logout():
-    session.clear()
+    session.pop("host_session", None)
     return redirect(url_for("login"))
 
 
-#? De aca para abajo endpoints de testing
-@app.get("/token")
-def token():
-    return jsonify(get_access_token(get_full_data=True))
+@app.errorhandler(Exception)
+def handle_exception(error):
+    
+    import os
+    from dotenv import load_dotenv
+    from werkzeug.exceptions import HTTPException
+    
+    load_dotenv()
+    ENV = os.getenv("ENV")
 
+    # Errores HTTP no se manejan:
+    if isinstance(error, HTTPException):
+        return error
 
-# @app.get("/test")
-# def queue():
+    # En ambientes de desarrollo no se manejan excepciones:
+    elif ENV != "PROD":
+        raise Exception(error)
 
-#     # User data:
-#     owner_email = session.get("owner_email")
-#     user_data = get_user_data(owner_email)
-#     spotify_access_token = get_access_token(user_data)
-
-#     url = f"https://api.spotify.com/v1/me/player"
-
-#     headers = {
-#         "Authorization": f"Bearer {spotify_access_token}",
-#         "Content-Type": "application/json"
-#     }
-
-#     response = requests.get(url, headers=headers)
-   
-#     return jsonify(response.json())
-
+    # Manejo de excepciones ocacionadas en la lógica en ambiente productivo:
+    else:
+        return render_template("generic_page.html", content="<h1> Lo sentimos, se ha producido un error </h1>")
 
 
 if __name__ == "__main__":

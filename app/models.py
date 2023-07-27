@@ -31,6 +31,8 @@ Ejemplo de documento de usuario:
         "requested_at":"2023-03-13 00:17:41"
     },
     "guest_settings": {
+        "time_to_re_add_same_track": 20,    # (mins)
+        "cooldown_time_to_add": 30,     # (segs)
         "guest_permissions": {
             "allow_guest_access":False,
             "free_mode": true,
@@ -58,7 +60,20 @@ Ejemplo de documento de usuario:
         "tracks_recently_added_by_guests": {
             "track_id":{
                 "added_at": "timestamp"
-            }
+            },
+            "track_id":{
+                "added_at": "timestamp"
+            },
+        },
+        "recent_guest_interventions": {
+            "guest_id":{
+                "last_song_added":"track_uri",
+                "added_at": "timestamp"
+            },
+            "guest_id":{
+                "last_song_added":"track_uri",
+                "added_at": "timestamp"
+            },
         }
     }
 }

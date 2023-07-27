@@ -1,11 +1,12 @@
 from flask import Blueprint, render_template, request, current_app, jsonify, session, redirect, url_for
-from ..services.spotify_user_account_service import get_user_playlists
-from ..services.spotify_catalog_service import get_playlist, get_playlist_items, search_tracks_in_catalog, get_track, get_artist, check_if_track_is_in_playlist
+from ..services.spotify_user_account_service import get_user_playlists, get_user_profile
+from ..services.spotify_catalog_service import get_playlist, get_playlist_items, search_tracks_in_catalog, get_track, get_artist, check_if_playlist_is_in_user_playlists,  check_if_track_is_in_playlist
 from ..services.spotify_user_playback_service import add_item_to_queue, get_user_queue, get_available_devices, skip_to_next, push_to_player
-from ..services.rokolify_users_service import get_user_data, check_if_track_was_recently_added_by_guests, add_recently_added_track_by_guest
+from ..services.rokolify_users_service import get_user_data, check_if_track_was_recently_added_by_guests, add_recently_added_track_by_guest, check_if_guest_is_allowed_to_add_to_queue, check_if_playlist_is_allowed_by_user
 from ..blueprints.spotify_auth import get_access_token
-from ..validators import login_required, owner_with_linked_spotify_account_required
+from ..validators import guest_session_required, owner_with_linked_spotify_account_validation, owner_with_guest_access_allowed_validation
 from itsdangerous import URLSafeSerializer
+import uuid
 from datetime import datetime
 from urllib.parse import urlparse
 
@@ -14,30 +15,40 @@ guest_bp = Blueprint("guest_bp", __name__)
 
 
 @guest_bp.get("/guest/gateway/<token>")
-@owner_with_linked_spotify_account_required
 def guest_gateway(token):
     serializer = URLSafeSerializer(current_app.secret_key)
     data = serializer.loads(token)
-    owner_email = data["owner_email"]
+    host_email = data["host_email"]
     # Se añade el identificador de la cuenta huesped a la sesion:
-    session["owner_email"] = owner_email
+    session["guest_session"] = {
+        "guest_id": str(uuid.uuid4()),
+        "host_email": host_email
+    }
     session.permanent = True
 
     return redirect(url_for("guest_bp.show_allowed_playlists"))
 
 
 @guest_bp.get("/guest/allowed_playlists")
-@owner_with_linked_spotify_account_required
-@login_required
+@guest_session_required
 def show_allowed_playlists():
 
     #? Validaciones:
-    owner_email = session.get("owner_email")
-    user_data = get_user_data(owner_email)
+    host_email = session["guest_session"]["host_email"]
+    host_user_data = get_user_data(host_email)
     
-    succes, allowed_playlists, next_playlists_url = get_allowed_playlists(user_data, limit=50)
+    # Validaciones sobre la cuenta del anfitrión:
+    validation_response = owner_with_linked_spotify_account_validation(host_user_data)
+    if validation_response:
+        return validation_response
+
+    validation_response = owner_with_guest_access_allowed_validation(host_user_data)
+    if validation_response:
+        return validation_response
+
+    succes, allowed_playlists, next_playlists_url = get_user_allowed_playlists(host_user_data, limit=50)
     
-    guest_permissions = user_data["guest_settings"]["guest_permissions"]
+    guest_permissions = host_user_data["guest_settings"]["guest_permissions"]
     free_mode = guest_permissions["free_mode"]
     owner_playlists_access = guest_permissions["owner_playlists_access"]
 
@@ -60,23 +71,36 @@ def show_allowed_playlists():
 
 
 @guest_bp.get("/guest/playlist/<playlist_id>")
-@owner_with_linked_spotify_account_required
-@login_required
+@guest_session_required
 def show_playlist_items(playlist_id):
 
     #? Validaciones:
-    owner_email = session.get("owner_email")
-    user_data = get_user_data(owner_email)
-    spotify_access_token = get_access_token(user_data)
+    host_email = session["guest_session"]["host_email"]
+    host_user_data = get_user_data(host_email)
+    spotify_access_token = get_access_token(host_user_data)
 
-    guest_permissions = user_data["guest_settings"]["guest_permissions"]
+    # Validaciones sobre la cuenta del anfitrión:
+    validation_response = owner_with_linked_spotify_account_validation(host_user_data)
+    if validation_response:
+        return validation_response
+
+    validation_response = owner_with_guest_access_allowed_validation(host_user_data)
+    if validation_response:
+        return validation_response
+
+    guest_permissions = host_user_data["guest_settings"]["guest_permissions"]
     free_mode = guest_permissions["free_mode"]
     owner_playlists_access = guest_permissions["owner_playlists_access"]
 
     # Se valida si está habilitado el recurso:
     if owner_playlists_access:
-        # TODO: cuar el playlist_id para validar que la playlist este entre las habilitadas
-        pass
+        # Se valida que la playlist este entre las habilitadas:
+        profile_succes, profile_response = get_user_profile(spotify_access_token)
+        spotify_user_id = profile_response["id"]
+        if not (
+            check_if_playlist_is_in_user_playlists(spotify_access_token, spotify_user_id, playlist_id) and check_if_playlist_is_allowed_by_user(host_user_data, playlist_id)
+        ):
+            return render_template("generic_page.html", content="<h1> Lo sentimos, se ha producido un error al validar la playlist </h1>")
     else:
         if free_mode:
             return redirect(url_for("guest_bp.guest_search_page"))
@@ -100,15 +124,23 @@ def show_playlist_items(playlist_id):
 
 
 @guest_bp.get("/guest/search_track")
-@owner_with_linked_spotify_account_required
-@login_required
+@guest_session_required
 def guest_search_page():
 
-    owner_email = session.get("owner_email")
-    user_data = get_user_data(owner_email)
-    guest_permissions = user_data["guest_settings"]["guest_permissions"]
+    host_email = session["guest_session"]["host_email"]
+    host_user_data = get_user_data(host_email)
+    guest_permissions = host_user_data["guest_settings"]["guest_permissions"]
     free_mode = guest_permissions["free_mode"]
     owner_playlists_access = guest_permissions["owner_playlists_access"]
+
+    # Validaciones sobre la cuenta del anfitrión:
+    validation_response = owner_with_linked_spotify_account_validation(host_user_data)
+    if validation_response:
+        return validation_response
+
+    validation_response = owner_with_guest_access_allowed_validation(host_user_data)
+    if validation_response:
+        return validation_response
 
     # Se valida si está habilitado el recurso:
     if not free_mode:
@@ -126,8 +158,7 @@ def guest_search_page():
 
 
 @guest_bp.post("/guest/api/queue")
-@owner_with_linked_spotify_account_required
-@login_required
+@guest_session_required
 def add_item_to_owner_queue():
 
     request_body = request.json
@@ -136,43 +167,50 @@ def add_item_to_owner_queue():
     track_uri = request_body["track_uri"]
 
     # User data:
-    owner_email = session.get("owner_email")
-    user_data = get_user_data(owner_email)
-    spotify_access_token = get_access_token(user_data)
+    guest_id = session["guest_session"]["guest_id"]
+    host_email = session["guest_session"]["host_email"]
+    host_user_data = get_user_data(host_email)
+    spotify_access_token = get_access_token(host_user_data)
 
     #? Validaciones -------------------------------------------------------------------------------
-    guest_permissions = user_data["guest_settings"]["guest_permissions"]
-    allow_guest_access = guest_permissions["allow_guest_access"]
 
     # Se valida que la petición venga de alguno de los endpoints habilitados:
-    allowed_referrer_endpoints = [current_app.config["BASE_URL"] + "/guest/playlist/", current_app.config["BASE_URL"] + "/guest/search_track"]
+    allowed_referrer_endpoints = [current_app.config["BASE_URL"] + "/guest/playlist/", current_app.config["BASE_URL"] + "/guest/search_track"]  # Endpoints habilitados
     if not any(request.referrer.startswith(allowed_endpoint) for allowed_endpoint in allowed_referrer_endpoints):
         return jsonify({"success": False, "message": "Petición inválida", "status_code": 403})
-    
-    if allow_guest_access is False:
-        return jsonify({"success": False, "message": "La intervención de invitados ha sido deshabilitada", "status_code": 403})
 
-    if check_if_track_was_recently_added_by_guests(user_data, track_uri) is True:
+    # Validaciones sobre la cuenta del anfitrión:
+    validation_response = owner_with_linked_spotify_account_validation(host_user_data)
+    if validation_response:
+        return jsonify({"success": False, "message": "Se ha producido un error, el usuario anfitrión no tiene una cuenta de Spotify vinculada", "status_code": 403})
+
+    validation_response = owner_with_guest_access_allowed_validation(host_user_data)
+    if validation_response:
+        return jsonify({"success": False, "message": "La intervención de invitados ha sido deshabilitada", "status_code": 403})
+    
+    # Se valida que la canción esta habilitada para agregar:
+    if check_if_track_was_recently_added_by_guests(host_user_data, track_uri) is True:
         return jsonify({"success": False, "message": "La canción ya ha sido agregada a la cola recientemente, prueba agregar otra canción", "status_code": 403})
+    
+    # Se valida que el invitado pueda agregar una canción:
+    if check_if_guest_is_allowed_to_add_to_queue(host_user_data, guest_id) is False:
+        return jsonify({"success": False, "message": f"Debes esperar {host_user_data['guest_settings'].get('cooldown_time_to_add', 0)} segundos antes de agregar otra canción a la cola de reproducción", "status_code": 403})
     
     # Si la petición se hace desde dentro de la vista de una playlist:
     if request.referrer.startswith(current_app.config["BASE_URL"] + "/guest/playlist/"):
         playlist_id = urlparse(request.referrer).path.split('/')[-1]
         playlist_track_index = request_body["playlist_track_index"]
-        track_validation = check_if_track_is_in_playlist(spotify_access_token, track_uri, playlist_id, playlist_track_index)
+        track_validation = check_if_track_is_in_playlist(spotify_access_token, track_uri, playlist_id, playlist_track_index)    # Se valida que la canción a agregar pertenezca a la playlist
         if not track_validation:
-            return {"success": False, "message": "La canción que se intenta agregar no se encuentra en la playlist"}
+            return jsonify({"success": False, "message": "La canción que se intenta agregar no se encuentra en la playlist", "status_code": 403})
     
-    #TODO: implementar un tiempo de retardo para que un mismo usuario pueda añadir otra cancion, para que no abusen del sistema
-
-    #TODO: implementar validacion de que el dueño de la cuenta este logueado
 
     #? Se agrega la canción a la cola ----------------------------------------------------------------
 
     # Se intenta añadir la canción a la cola del reproductor activo:
     success, response = add_item_to_queue(spotify_access_token, track_uri)
     if success:
-        add_recently_added_track_by_guest(user_data, track_uri)  # Se actualiza el registro de canciones agregadas recientemente por invitados
+        add_recently_added_track_by_guest(host_user_data, guest_id, track_uri)  # Se actualiza el registro de canciones agregadas recientemente por invitados
         return jsonify({"success":True, "message": "Canción agregada a la cola", "status_code": 200})
 
 
@@ -206,7 +244,7 @@ def add_item_to_owner_queue():
             if not push_success:
                 return jsonify({"success": False, "message": "No se puede reproducir la canción", "status_code": push_response["status_code"]})
 
-        add_recently_added_track_by_guest(user_data, track_uri)    # Se actualiza el registro de canciones agregadas recientemente por invitados
+        add_recently_added_track_by_guest(host_user_data, guest_id, track_uri)    # Se actualiza el registro de canciones agregadas recientemente por invitados
         return jsonify({"success": True, "message": "La canción se reproducirá a continuación", "status_code": 200})
                 
 
@@ -215,15 +253,23 @@ def add_item_to_owner_queue():
 
 
 @guest_bp.get("/guest/api/queue")
-@owner_with_linked_spotify_account_required
-@login_required
+@guest_session_required
 def get_owner_queue():
 
     # User data:
-    owner_email = session.get("owner_email")
-    user_data = get_user_data(owner_email)
-    spotify_access_token = get_access_token(user_data)
-    
+    host_email = session["guest_session"]["host_email"]
+    host_user_data = get_user_data(host_email)
+    spotify_access_token = get_access_token(host_user_data)
+
+    # Validaciones sobre la cuenta del anfitrión:
+    validation_response = owner_with_linked_spotify_account_validation(host_user_data)
+    if validation_response:
+        return jsonify({"success": False, "message": "Se ha producido un error, el usuario anfitrión no tiene una cuenta de Spotify vinculada", "status_code": 403})
+
+    validation_response = owner_with_guest_access_allowed_validation(host_user_data)
+    if validation_response:
+        return jsonify({"success": False, "message": "Se ha producido un error, el usuario anfitrión ha deshabilitado la intervención de invitados", "status_code": 403})
+
     success, response = get_user_queue(spotify_access_token)
 
     if success:
@@ -235,14 +281,22 @@ def get_owner_queue():
 
 
 @guest_bp.get("/guest/api/track/<string:track_id>")
-@owner_with_linked_spotify_account_required
-@login_required
+@guest_session_required
 def get_track_data(track_id):
 
     # User data:
-    owner_email = session.get("owner_email")
-    user_data = get_user_data(owner_email)
-    spotify_access_token = get_access_token(user_data)
+    host_email = session["guest_session"]["host_email"]
+    host_user_data = get_user_data(host_email)
+    spotify_access_token = get_access_token(host_user_data)
+
+    # Validaciones sobre la cuenta del anfitrión:
+    validation_response = owner_with_linked_spotify_account_validation(host_user_data)
+    if validation_response:
+        return jsonify({"success": False, "message": "Se ha producido un error, el usuario anfitrión no tiene una cuenta de Spotify vinculada", "status_code": 403})
+
+    validation_response = owner_with_guest_access_allowed_validation(host_user_data)
+    if validation_response:
+        return jsonify({"success": False, "message": "Se ha producido un error, el usuario anfitrión ha deshabilitado la intervención de invitados", "status_code": 403})
 
     track_success, track_response = get_track(spotify_access_token, track_id)
     if not track_success:
@@ -287,15 +341,23 @@ def get_track_data(track_id):
 
 
 @guest_bp.get("/guest/api/search_in_catalog/<string:search>")
-@owner_with_linked_spotify_account_required
-@login_required
+@guest_session_required
 def search_in_catalog(search):
 
     # User data:
-    owner_email = session.get("owner_email")
-    user_data = get_user_data(owner_email)
-    spotify_access_token = get_access_token(user_data)
+    host_email = session["guest_session"]["host_email"]
+    host_user_data = get_user_data(host_email)
+    spotify_access_token = get_access_token(host_user_data)
     
+    # Validaciones sobre la cuenta del anfitrión:
+    validation_response = owner_with_linked_spotify_account_validation(host_user_data)
+    if validation_response:
+        return jsonify({"success": False, "message": "Se ha producido un error, el usuario anfitrión no tiene una cuenta de Spotify vinculada", "status_code": 403})
+
+    validation_response = owner_with_guest_access_allowed_validation(host_user_data)
+    if validation_response:
+        return jsonify({"success": False, "message": "Se ha producido un error, el usuario anfitrión ha deshabilitado la intervención de invitados", "status_code": 403})
+
     success, response = search_tracks_in_catalog(spotify_access_token, search)
 
     if success:
@@ -306,14 +368,22 @@ def search_in_catalog(search):
 
 
 @guest_bp.get("/guest/api/get_playlist_items/<string:playlist_id>/<int:offset>/<int:limit>")
-@owner_with_linked_spotify_account_required
-@login_required
+@guest_session_required
 def get_more_playlist_items(playlist_id, offset, limit):
     
     # User data:
-    owner_email = session.get("owner_email")
-    user_data = get_user_data(owner_email)
-    spotify_access_token = get_access_token(user_data)
+    host_email = session["guest_session"]["host_email"]
+    host_user_data = get_user_data(host_email)
+    spotify_access_token = get_access_token(host_user_data)
+
+    # Validaciones sobre la cuenta del anfitrión:
+    validation_response = owner_with_linked_spotify_account_validation(host_user_data)
+    if validation_response:
+        return jsonify({"success": False, "message": "Se ha producido un error, el usuario anfitrión no tiene una cuenta de Spotify vinculada", "status_code": 403})
+
+    validation_response = owner_with_guest_access_allowed_validation(host_user_data)
+    if validation_response:
+        return jsonify({"success": False, "message": "Se ha producido un error, el usuario anfitrión ha deshabilitado la intervención de invitados", "status_code": 403})
 
     success, response = get_playlist_items(spotify_access_token, playlist_id, offset=offset, limit=limit)
 
@@ -325,13 +395,22 @@ def get_more_playlist_items(playlist_id, offset, limit):
 
 
 @guest_bp.get("/guest/api/get_playlists/<int:offset>/<int:limit>")
-@owner_with_linked_spotify_account_required
-@login_required
+@guest_session_required
 def get_more_playlists(offset, limit):
     
-    owner_email = session.get("owner_email")
-    user_data = get_user_data(owner_email)
-    success, allowed_playlists, next_playlists_url = get_allowed_playlists(user_data, offset=offset, limit=limit)
+    host_email = session["guest_session"]["host_email"]
+    host_user_data = get_user_data(host_email)
+
+    # Validaciones sobre la cuenta del anfitrión:
+    validation_response = owner_with_linked_spotify_account_validation(host_user_data)
+    if validation_response:
+        return jsonify({"success": False, "message": "Se ha producido un error, el usuario anfitrión no tiene una cuenta de Spotify vinculada", "status_code": 403})
+
+    validation_response = owner_with_guest_access_allowed_validation(host_user_data)
+    if validation_response:
+        return jsonify({"success": False, "message": "Se ha producido un error, el usuario anfitrión ha deshabilitado la intervención de invitados", "status_code": 403})
+
+    success, allowed_playlists, next_playlists_url = get_user_allowed_playlists(host_user_data, offset=offset, limit=limit)
 
     if success:
         return jsonify({"success": True, "status_code": 200, "playlists": allowed_playlists, "next": next_playlists_url})
@@ -339,7 +418,8 @@ def get_more_playlists(offset, limit):
         return jsonify({"success": False, "message":"Error al obtener las playlists"})
 
 
-def get_allowed_playlists(user_data, offset=0, limit=20):
+
+def get_user_allowed_playlists(user_data, offset=0, limit=20):
 
     spotify_access_token = get_access_token(user_data)
 
@@ -347,18 +427,11 @@ def get_allowed_playlists(user_data, offset=0, limit=20):
     owner_playlists = response["items"] if success else []
     next_playlists_url = response["next"] if success else ""
 
-    playlists_access_settings = user_data["guest_settings"]["playlists_settings"]
-
+    # Se filtran las playlists del huesped que no esten habilitadas:
     allowed_playlists = []
     for playlist in owner_playlists:
 
-        if playlist["id"] in playlists_access_settings:
-            if playlists_access_settings[playlist["id"]].get("allowed") is False:
-               continue
-            else:
-                allowed_playlists.append(playlist)
-
-        else:
+        if check_if_playlist_is_allowed_by_user(user_data, playlist["id"]):
             allowed_playlists.append(playlist)
 
     return success, allowed_playlists, next_playlists_url

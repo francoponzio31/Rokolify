@@ -53,8 +53,8 @@
                 
                 <div class="w-100 justify-content-between my-3">
                     <h5 class="card-title fs-5 fw-semibold mb-0">
-                        No hay ninguna cuenta de Spotify vinculada
-                        <a tabindex="0" class="btn btn-secondary rounded-pill py-0 px-1 ms-3" data-bs-container="body" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="En caso de tener una sesión de Spotify vinculada en el navegador, tu cuenta de Rokolify se vinculará automaticamente a esa sesión de Spotify. Para seleccionar otra cuenta de Spotify primero debes cerrar sesión desde la pagina web de Spotify.">
+                        <span class="me-3">No hay ninguna cuenta de Spotify vinculada</span>
+                        <a tabindex="0" class="btn btn-secondary rounded-pill py-0 px-1" data-bs-container="body" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="En caso de tener una sesión de Spotify vinculada en el navegador, tu cuenta de Rokolify se vinculará automaticamente a esa sesión de Spotify. Para seleccionar otra cuenta de Spotify primero debes cerrar sesión desde la pagina web de Spotify.">
                             <img src="{{url_for('static', filename='img/question-lg.svg')}}">
                         </a>
                     </h5>
@@ -110,6 +110,8 @@
                                 <img src="{{url_for('static', filename='img/phone.svg')}}" class="item-image rounded-start" style="width:50px;" alt="item-image">
                             {% elif active_device["type"] == "Speaker" %}
                                 <img src="{{url_for('static', filename='img/speaker.svg')}}" class="item-image rounded-start" style="width:50px;" alt="item-image">
+                            {% elif device["type"] == "TV" %}
+                                <img src="{{url_for('static', filename='img/tv.svg')}}" class="item-image rounded-start" style="width:50px;" alt="item-image">
                             {% endif %}
                             <div class="w-100 justify-content-between">
                                 <h5 class="card-title fs-5 fw-semibold mb-0">{{ active_device["name"] }}</h5>
@@ -143,6 +145,8 @@
                                         <img src="{{url_for('static', filename='img/phone.svg')}}" class="item-image rounded-start" style="width:50px;" alt="item-image">
                                     {% elif device["type"] == "Speaker" %}
                                         <img src="{{url_for('static', filename='img/speaker.svg')}}" class="item-image rounded-start" style="width:50px;" alt="item-image">
+                                    {% elif device["type"] == "TV" %}
+                                        <img src="{{url_for('static', filename='img/tv.svg')}}" class="item-image rounded-start" style="width:50px;" alt="item-image">
                                     {% endif %}
                                     <div class="w-100 justify-content-between">
                                         <h5 class="card-title fs-5 fw-semibold mb-0">{{ device["name"] }}</h5>

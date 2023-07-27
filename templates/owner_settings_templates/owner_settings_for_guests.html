@@ -77,20 +77,40 @@
                 <div>
                     <div class="form-check form-switch mb-3">
                         <input class="form-check-input user-setting-switch" type="checkbox" role="button" id="allow-guest-access-switch" name="guest-access" {% if allow_guest_access == True %} checked {% endif %}>
-                        <label class="form-check-label" for="allow-guest-access-switch">Agregar a cola de reproducción</label>
+                        <label class="form-check-label">
+                            <span class="me-3"><b>Habilitar acceso de invitados</b></span>
+                            <a tabindex="0" class="btn btn-secondary rounded-pill py-0 px-1" data-bs-container="body" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="Habilita el funcionamiento de la sección de invitados. Permite que otros usuarios puedan agregar canciones a tu cola de reproducción.">
+                                <img src="{{url_for('static', filename='img/question-lg.svg')}}" alt="free-mode-btn-icon">
+                            </a>
+                        </label>
                     </div>
 
-                    <div class="row">
-                        <div class="col-sm-4">
+                    <div class="row mb-3">
+                        <div class="col-xl-6">
                             <label class="form-label">
-                                Tiempo mínimo reagregar una canción
-                                <a tabindex="0" class="btn btn-secondary rounded-pill py-0 px-1 ms-3" data-bs-container="body" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="Tiempo en minutos que debe pasar para que la misma canción se vuelva a agregar a la cola de reproducción por invitados. Esta validación solo aplica a canciones agregadas por invitados.">
+                                <span class="me-3">Tiempo mínimo para reagregar la misma canción (minutos)</span>
+                                <a tabindex="0" class="btn btn-secondary rounded-pill py-0 px-1" data-bs-container="body" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="Tiempo en minutos que debe pasar para que la misma canción se pueda volver a agregar a la cola de reproducción por parte de los invitados. Esta validación solo aplica a canciones agregadas por invitados. Utilizar esta validación para evitar que se agreguen constantemente las mismas canciones y mantener una variedad.">
                                     <img src="{{url_for('static', filename='img/question-lg.svg')}}" alt="free-mode-btn-icon">
                                 </a>
                             </label>
                             <div class="input-group">
                                 <input type="number" id="re-add-song-minutes-input" class="form-control" value="{{time_to_re_add_same_track}}" min="0"/>
                                 <button type="button" id="re-add-song-minutes-save-btn" class="btn btn-primary" disabled>Guardar</button>
+                            </div>  
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-xl-6">
+                            <label class="form-label">
+                                <span class="me-3">Tiempo para volver a agregar una canción por invitado (segundos)</span>
+                                <a tabindex="0" class="btn btn-secondary rounded-pill py-0 px-1" data-bs-container="body" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="Tiempo en segundos que deben pasar para que un mismo invitado vuelva a agregar una canción a la cola de reproducción. Utilizar esta validación para evitar que se un abuso del sistema por parte de los invitados.">
+                                    <img src="{{url_for('static', filename='img/question-lg.svg')}}" alt="free-mode-btn-icon">
+                                </a>
+                            </label>
+                            <div class="input-group">
+                                <input type="number" id="cooldown-seconds-input" class="form-control" value="{{cooldown_time_to_add}}" min="0"/>
+                                <button type="button" id="cooldown-seconds-save-btn" class="btn btn-primary" disabled>Guardar</button>
                             </div>  
                         </div>
                     </div>
@@ -111,9 +131,9 @@
                         <div class="form-check form-switch">
                             <input class="form-check-input user-setting-switch" type="checkbox" role="button" id="free-mode-switch" name="free-mode" {% if free_mode == True %} checked {% endif %}>
                             <label class="form-check-label">
-                                Modo libre
-                                <a tabindex="0" class="btn btn-secondary rounded-pill py-0 px-1 ms-3" data-bs-container="body" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="Habilita a los invitados a buscar cualquier canción dentro del catálogo de Spotify y agregarla a la cola de reproducción.">
-                                    <img src="{{url_for('static', filename='img/question-lg.svg')}}" alt="free-mode-btn-icon">
+                                <span class="me-3">Buscador de canciones</span>
+                                <a tabindex="0" class="btn btn-secondary rounded-pill py-0 px-1" data-bs-container="body" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="Habilita a los invitados a buscar cualquier canción dentro del catálogo de Spotify y agregarla a la cola de reproducción.">
+                                    <img src="{{url_for('static', filename='img/question-lg.svg')}}">
                                 </a>
                             </label>
                         </div>
@@ -126,10 +146,15 @@
                     
                     <div class="form-check form-switch mb-3">
                         <input class="form-check-input user-setting-switch" type="checkbox" role="button" id="owner-playlists-access-switch" name="playlist-access" {% if owner_playlists_access == True %} checked {% endif %}>
-                        <label class="form-check-label">Acceso a mis playlists</label>
+                        <label class="form-check-label">
+                            <span class="me-3">Acceso a mis playlists</span>
+                            <a tabindex="0" class="btn btn-secondary rounded-pill py-0 px-1" data-bs-container="body" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="Habilita a los invitados a acceder a tus playlists habilitadas y agregar sus canciones a la cola de reproducción.">
+                                <img src="{{url_for('static', filename='img/question-lg.svg')}}">
+                            </a>
+                        </label>
                     </div>
                     <button type="button" id="owner-playlists-settings-btn" class="btn btn-primary align-self-start" data-bs-toggle="modal" data-bs-target="#paylist-settings">
-                        Configurar acceso a playlists
+                        Configurar acceso a mis playlists
                     </button>
                         
                     <div class="modal fade" id="paylist-settings" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="paylist-settings-label" aria-hidden="true">
@@ -152,6 +177,7 @@
                                                         <input class="form-check-input allow-playlist-switch" type="checkbox" role="button" id="{{ playlist['id'] }}">
                                                         <label class="form-check-label" for="{{ playlist['id'] }}">Habilitar</label>
                                                     </div>
+                                                    <!-- TODO: Modal de configuración de playlist -->
                                                     <!-- <button type="button" id="playlist-settings-btn" class="btn btn-sm btn-secondary" data-bs-target="#playlist-conditions-settings" data-bs-toggle="modal">Más opciones</button> -->
                                                 </div>
                                             </div>
@@ -175,8 +201,11 @@
                                                 <span aria-hidden="true">&laquo;</span>
                                             </a>
                                         </li>
+                                        
+                                        <!-- Cantidad de paginas necesarias, redondeado para arriba y convertido en integer -->
+                                        {% set number_of_pages = ( (owner_playlists["total"] / owner_playlists["limit"]) | round(0, 'ceil') | int )  %} 
 
-                                        {% for page_index in range(1, (owner_playlists["total"] // owner_playlists["limit"]) + 2 ) %}
+                                        {% for page_index in range(1, number_of_pages + 1 ) %}
                                             {% if page_index == 1 %}
                                                 <li class="playlist-pagination-btn page-item active" data-pagination-value="{{page_index}}"  data-pagination-rol="page-number">
                                                     <a class="page-link" href="#">{{page_index}}</a>
@@ -188,7 +217,7 @@
                                             {% endif %}
                                         {% endfor %}
 
-                                        <li id="playlist-settings-next-page-btn" class="playlist-pagination-btn page-item" data-pagination-value="next" data-pagination-rol="nav">
+                                        <li id="playlist-settings-next-page-btn" class="playlist-pagination-btn page-item {% if number_of_pages == 1 %} disabled {% endif %}" data-pagination-value="next" data-pagination-rol="nav">
                                             <a class="page-link" href="#" aria-label="Next">
                                                 <span aria-hidden="true">&raquo;</span>
                                             </a>
@@ -206,7 +235,7 @@
 
                     <!-- TODO: Modal de configuración de playlist -->
 
-                    <!-- <div class="modal fade" id="playlist-conditions-settings" tabindex="-1" aria-labelledby="playlist-conditions-settings-label" aria-hidden="true">
+                    <div class="modal fade" id="playlist-conditions-settings" tabindex="-1" aria-labelledby="playlist-conditions-settings-label" aria-hidden="true">
                         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
                             <div class="modal-content">
                                 <div class="modal-header">
@@ -266,7 +295,7 @@
                                 </div>
                             </div>
                         </div>
-                    </div> -->
+                    </div>
 
                 </div>
 

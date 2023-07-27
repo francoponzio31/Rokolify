@@ -1,4 +1,4 @@
-from flask import Blueprint, request, redirect, url_for, session, current_app, jsonify
+from flask import Blueprint, request, redirect, url_for, session, current_app, jsonify, render_template
 import requests
 from ..services.rokolify_users_service import get_user_data, add_user, update_user
 from ..models import User
@@ -70,10 +70,14 @@ def google_auth_callback():
         else: # Si ya existe actualizo sus datos por si cambiaron
             update_user(user_email, {"name":google_user_info["name"], "profile_picture":google_user_info["picture"]})
 
-        # TODO: validar que se haya podido crear el usuario
+        # Se valida que se haya podido crear el usuario:
+        if not get_user_data(user_email):
+            return render_template("generic_page.html", content="<h1> Lo sentimos, se ha producido un error al registrar al usuario. Intentelo de nuevo.</h1>")
 
         # Guardo el email del usuario en la sesion:
-        session["owner_email"] = user_email
+        session["host_session"] = {
+            "user_email": user_email
+        }
         session.permanent = True
 
         return redirect(url_for("index"))

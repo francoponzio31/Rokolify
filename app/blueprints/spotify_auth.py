@@ -4,16 +4,15 @@ import urllib.parse
 import base64
 import secrets
 from datetime import datetime
-from ..services.rokolify_users_service import get_user_data, add_user, update_user
-from ..models import User
-from ..validators import login_required
+from ..services.rokolify_users_service import update_user
+from ..validators import host_session_required
 
 
 spotify_auth = Blueprint("spotify_auth", __name__)
 
 
 @spotify_auth.get("/spotify_login")
-@login_required
+@host_session_required
 def spotify_login():
 
     client_id = current_app.config["SPOTIFY_CLIENT_ID"]
@@ -35,7 +34,7 @@ def spotify_login():
 
 
 @spotify_auth.get("/spotify_auth_callback")
-@login_required
+@host_session_required
 def spotify_auth_callback():
 
     client_id = current_app.config["SPOTIFY_CLIENT_ID"]
@@ -64,7 +63,7 @@ def spotify_auth_callback():
         spotify_access_token_data = response.json()
         spotify_access_token_data["requested_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
        
-        user_email = session["owner_email"]
+        user_email = session["host_session"]["user_email"]
 
         # Guardo los datos del token de acceso en la db:
         update_user(user_email, {"spotify_access_token_data":spotify_access_token_data})
