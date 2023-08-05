@@ -5,3 +5,4 @@ pymongo
 qrcode
 pillow
 oauthlib
+pytz

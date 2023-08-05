@@ -41,20 +41,32 @@ Ejemplo de documento de usuario:
         "playlists_settings": {
             "playlist_id": {
                 "allowed": true,
-                "conditions":{
-                    "days": [1,2,5],
-                    "hour_range":[["10:30","14:15"], ["18:20","21:00"]]
-                }
+                "conditions":[
+                    {
+                        "day": 1,
+                        "init_time": "2023-03-13 00:17:41",
+                        "end_time": "2023-03-13 00:17:41",
+                    },
+                    {
+                        "day": 4,
+                        "init_time": "2023-03-13 00:17:41",
+                        "end_time": "2023-03-13 00:17:41",
+                    },
+                ]
             },
             "playlist_id": {
                 "allowed": true,
-                "conditions":{}
+                "conditions": []
             },
             "playlist_id": {
                 "allowed": true,
-                "conditions":{
-                    "days": [2,5]
-                }
+                "conditions":[
+                    {
+                        "day": 4,
+                        "init_time": "2023-03-13 00:17:41",
+                        "end_time": "2023-03-13 00:17:41",
+                    }
+                ]
             },
         },
         "tracks_recently_added_by_guests": {

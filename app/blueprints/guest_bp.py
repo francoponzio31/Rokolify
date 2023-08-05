@@ -46,7 +46,7 @@ def show_allowed_playlists():
     if validation_response:
         return validation_response
 
-    succes, allowed_playlists, next_playlists_url = get_user_allowed_playlists(host_user_data, limit=50)
+    succes, allowed_playlists, next_playlists_url = _get_user_allowed_playlists(host_user_data, limit=50)
     
     guest_permissions = host_user_data["guest_settings"]["guest_permissions"]
     free_mode = guest_permissions["free_mode"]
@@ -100,7 +100,7 @@ def show_playlist_items(playlist_id):
         if not (
             check_if_playlist_is_in_user_playlists(spotify_access_token, spotify_user_id, playlist_id) and check_if_playlist_is_allowed_by_user(host_user_data, playlist_id)
         ):
-            return render_template("generic_page.html", content="<h1> Lo sentimos, se ha producido un error al validar la playlist </h1>")
+            return render_template("generic_page.html", content="<h1> Lo sentimos, la playlist no se encuentra disponible. </h1>")
     else:
         if free_mode:
             return redirect(url_for("guest_bp.guest_search_page"))
@@ -410,7 +410,7 @@ def get_more_playlists(offset, limit):
     if validation_response:
         return jsonify({"success": False, "message": "Se ha producido un error, el usuario anfitrión ha deshabilitado la intervención de invitados", "status_code": 403})
 
-    success, allowed_playlists, next_playlists_url = get_user_allowed_playlists(host_user_data, offset=offset, limit=limit)
+    success, allowed_playlists, next_playlists_url = _get_user_allowed_playlists(host_user_data, offset=offset, limit=limit)
 
     if success:
         return jsonify({"success": True, "status_code": 200, "playlists": allowed_playlists, "next": next_playlists_url})
@@ -419,7 +419,7 @@ def get_more_playlists(offset, limit):
 
 
 
-def get_user_allowed_playlists(user_data, offset=0, limit=20):
+def _get_user_allowed_playlists(user_data, offset=0, limit=20):
 
     spotify_access_token = get_access_token(user_data)
 

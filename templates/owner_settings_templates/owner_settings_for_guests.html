@@ -157,16 +157,18 @@
                         Configurar acceso a mis playlists
                     </button>
                         
-                    <div class="modal fade" id="paylist-settings" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="paylist-settings-label" aria-hidden="true">
+                    <div class="modal fade" id="paylist-settings" data-bs-keyboard="false" tabindex="-1" aria-labelledby="paylist-settings-label" aria-hidden="true">
                         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
                             <div class="modal-content">
                                 <div class="modal-header">
                                     <h3 class="modal-title fs-5" id="paylist-settings-label">Configuración de acceso a playlists</h3>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body container" style="height: 100vh;">
 
                                     <div id="playlist-settings-items-container" class="d-flex flex-column gap-2">
                                         {% for playlist in owner_playlists["items"] %}
+
                                             <div class="playlist-setting-card card mx-1" data-playlist-uri="{{ playlist['uri'] }}">
                                                 <div class="card-header d-flex align-items-center">
                                                     <img src="{{ playlist['images'][0]['url'] }}" class="img-thumbnail img-thumbnail-playlist playlist-image object-fit-cover me-3" style="width: 55px; height: 55px;" alt="playlist-image">
@@ -174,11 +176,11 @@
                                                 </div>
                                                 <div class="card-body d-flex align-items-center justify-content-around">
                                                     <div class="form-check form-switch">
-                                                        <input class="form-check-input allow-playlist-switch" type="checkbox" role="button" id="{{ playlist['id'] }}">
+                                                        <input class="form-check-input allow-playlist-switch" type="checkbox" role="button" data-playlist-id="{{ playlist['id'] }}">
                                                         <label class="form-check-label" for="{{ playlist['id'] }}">Habilitar</label>
                                                     </div>
-                                                    <!-- TODO: Modal de configuración de playlist -->
-                                                    <!-- <button type="button" id="playlist-settings-btn" class="btn btn-sm btn-secondary" data-bs-target="#playlist-conditions-settings" data-bs-toggle="modal">Más opciones</button> -->
+                                                    <!-- Boton para Condiciones de configuracion para playlists -->
+                                                    <button type="button" class="playlist-allow-conditions-btn btn btn-sm btn-secondary" data-playlist-id="{{ playlist['id'] }}" data-bs-target="#playlist-conditions-settings" data-bs-toggle="modal">Condiciones</button>
                                                 </div>
                                             </div>
                                         {% endfor %}
@@ -194,7 +196,7 @@
                                 </div>
 
                                 <!-- Paginado de playlists -->
-                                <nav class="d-flex justify-content-center my-2" aria-label="Page navigation example">
+                                <nav class="d-flex justify-content-center my-3" aria-label="Page navigation example">
                                     <ul id="pagination-btn-container" class="pagination pagination-sm mb-0 overflow-x-auto">
                                         <li id="playlist-settings-previous-page-btn" class="playlist-pagination-btn page-item disabled" data-pagination-value="previous" data-pagination-rol="nav">
                                             <a class="page-link" href="#" aria-label="Previous">
@@ -225,82 +227,98 @@
                                     </ul>
                                 </nav>
 
-                                <div class="modal-footer">
-                                    <button type="button" id="playlist-settings-discard-btn" class="btn btn-secondary" data-bs-dismiss="modal">Descartar</button>
-                                    <button type="button" id="playlist-settings-save-btn"  class="btn btn-primary" data-bs-dismiss="modal">Guardar</button>
-                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- TODO: Modal de configuración de playlist -->
-
+                    <!-- Modal de configuración de condiciones para playlist -->
                     <div class="modal fade" id="playlist-conditions-settings" tabindex="-1" aria-labelledby="playlist-conditions-settings-label" aria-hidden="true">
                         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
                             <div class="modal-content">
                                 <div class="modal-header">
-                                    <h2 class="modal-title modal-title fs-5" id="playlist-conditions-settings-label">Configuración de playlist</h2>
+                                    <h2 class="modal-title modal-title fs-5" id="playlist-conditions-settings-label">Condiciones para habilitar playlist</h2>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body container">
-
-                                    <div class="card mb-3 mx-1">
-                                        <div class="card-header d-flex align-items-center">
-                                            <h2 class="card-title my-0"></h2>
-                                        </div>
-                                        <div class="card-body d-flex align-items-center justify-content-around">
-                                            <form action="">
-                                                
-                                                <div class="mb-3">
-                                                    <label class="form-check-label">Días habilitados:</label>
-                                                    
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="checkbox" id="monday-checkbox">
-                                                        <label class="form-check-label" for="monday-checkbox">Lunes</label>
-                                                        <button type="button" class="btn btn-sm btn-secondary" data-bs-target="#paylist-settings" data-bs-toggle="modal">Horarios</button>
-                                                    </div>
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="checkbox" id="tuesday-checkbox">
-                                                        <label class="form-check-label" for="tuesday-checkbox">Martes</label>
-                                                    </div>
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="checkbox" id="wednesday-checkbox">
-                                                        <label class="form-check-label" for="wednesday-checkbox">Miércoles</label>
-                                                    </div>
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="checkbox" id="thursday-checkbox">
-                                                        <label class="form-check-label" for="thursday-checkbox">Jueves</label>
-                                                    </div>
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="checkbox" id="fryday-checkbox">
-                                                        <label class="form-check-label" for="fryday-checkbox">Viernes</label>
-                                                    </div>
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="checkbox" id="saturday-checkbox">
-                                                        <label class="form-check-label" for="saturday-checkbox">Sábado</label>
-                                                    </div>
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="checkbox" id="sunday-checkbox">
-                                                        <label class="form-check-label" for="sunday-checkbox">Domingo</label>
-                                                    </div>
+                                    <div class="px-3 border rounded-3">
+                                        <!-- Form de horarios -->
+                                        <div class="my-4">
+                                            <h2 class="fs-5">Agregar horarios</h2>
+                                            <div class="row">
+                                                <!-- Combo de dias -->
+                                                <div class="col-md-4">
+                                                <label class="form-label">Día</label>
+                                                    <select id="allow-playlist-day-input" class="form-select">
+                                                        <option value="-1">Todos</option>
+                                                        <option value="0">Lunes</option>
+                                                        <option value="1">Martes</option>
+                                                        <option value="2">Miércoles</option>
+                                                        <option value="3">Jueves</option>
+                                                        <option value="4">Viernes</option>
+                                                        <option value="5">Sábado</option>
+                                                        <option value="6">Domingo</option>
+                                                    </select>
                                                 </div>
-                                                
-                                                <button type="button" class="btn btn-sm btn-secondary" data-bs-target="#paylist-settings" data-bs-toggle="modal">Volver</button>
-                                                <button type="button" class="btn btn-sm btn-primary" data-bs-target="#paylist-settings" data-bs-toggle="modal">Confirmar</button>
-                                            
-                                            </form>
+                                                <!-- Horario de inicio -->
+                                                <div class="col-md-4">
+                                                    <label class="form-label">Horario de inicio</label>
+                                                    <input type="time" class="form-control" id="allow-playlist-init-time-input" value="00:00">
+                                                </div>
+                                                <!-- Horario de fin -->
+                                                <div class="col-md-4">
+                                                    <label class="form-label">Horario de fin</label>
+                                                    <input type="time" class="form-control" id="allow-playlist-end-time-input" value="23:59">
+                                                </div>
+                                            </div>
+                                            <div id="allow-condition-validation-message" class="d-flex justify-content-end my-2 d-none">
+                                                <span style="font-size: .9rem; color:#ff7070">
+                                                    El horario de fin debe ser posterior al horario de inicio
+                                                </span>
+                                            </div>
+                                            <!-- Botón para agregar -->
+                                            <div class="row mt-2">
+                                                <div class="col-md-12 d-flex justify-content-end">
+                                                    <button class="btn btn-primary" id="add-allow-playlist-condition-btn">Agregar</button>
+                                                </div>
+                                            </div>
+                                        </div>
 
+                                        <!-- Grilla -->
+                                        <div class="row my-4">
+                                            <h2 class="fs-5">Horarios habilitados</h2>
+                                            <div class="col-md-12">
+                                                <table class="table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Día</th>
+                                                            <th>Horario de inicio</th>
+                                                            <th>Horario de fin</th>
+                                                            <th></th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="allow-playlist-conditions-grid">
+                                                    </tbody>
+                                                </table>
+                                                <!-- Empty message -->
+                                                <div id="allow-conditions-grid-empty-message">
+                                                    <span class="fs-6 ps-3">Aun no has agregado ningún horario</span>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                            
                                 </div>
+
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-target="#paylist-settings" data-bs-toggle="modal">Volver</button>
+                                </div>
+
                             </div>
                         </div>
                     </div>
-
                 </div>
 
             </section>
-            
+
         {% endif %}
 
     </div>
@@ -318,18 +336,20 @@
 {% endblock %}
 
 {% block scripts %}
+    <!-- Dejar estos script antes que los de bootstrap (dentro del bloque super), ya que necesito que se ejecute este codigo rapido y al estar el de bootstrap primero hace que se retarde su ejecución -->
+    <script src="{{url_for('static', filename='js/owner_scripts/owner_guest_settings_events.js')}}"></script>
+
+    <script> const playlistsAmountToShow = "{{ playlists_amount_to_show }}" ; </script>
+    <script src="{{url_for('static', filename='js/owner_scripts/owner_playlists_settings_events.js')}}"></script>
+
     {{ super() }}
+
     <script src="{{url_for('static', filename='js/tooltips_init.js')}}"></script>
 
     <script src="{{url_for('static', filename='js/owner_scripts/owner_copy_url.js')}}"></script>
-
-    <script> const playlistsAmountToShow = "{{ playlists_amount_to_show }}" ; </script>
-    <script src="{{url_for('static', filename='js/owner_scripts/owner_playlists_settings_pagination.js')}}"></script>
 
     <script> let linkedpotifyAccountValidation = "{{linked_spotify_account_validation}}"; </script>
     <script> let devicesValidation = "{{available_devices_existence}}"; </script>
     <script src="{{url_for('static', filename='js/owner_scripts/owner_devices_alert.js')}}"></script>
     
-    <script> let playlistSettings = JSON.parse("{{playlists_settings}}".replace(/&#34;/g, '"')); </script>
-    <script src="{{url_for('static', filename='js/owner_scripts/owner_guest_settings_events.js')}}"></script>
 {% endblock %}

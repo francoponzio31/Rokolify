@@ -18,7 +18,7 @@ def guest_session_required(function):
     @wraps(function)
     def wrapper(*args, **kwargs):
         if not session.get("guest_session"):
-            return render_template("generic_page.html", title="Sesión expirada", content="<h1> Sesión de invitado expirada </h1>")
+            return render_template("generic_page.html", title="Sesión expirada", content="<h1> Sesión de invitado expirada. </h1>")
         else:
             return function(*args, **kwargs)
     return wrapper

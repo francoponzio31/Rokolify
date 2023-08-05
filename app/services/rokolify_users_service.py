@@ -1,5 +1,6 @@
 from ..db_connection import connect_to_db
 from datetime import datetime
+import pytz
 
 
 db = connect_to_db()
@@ -31,41 +32,116 @@ def update_guest_permission(owner_email, permission, new_value):
 
 
 # ? Playlist access settings -------------------------------------------------
-def update_playlists_access_settings(owner_email, new_settings):
+def set_allow_playlist_settings(owner_email, playlist_id, allow_value):
+    user_data = get_user_data(owner_email)
+    playlists_settings = user_data["guest_settings"]["playlists_settings"]
+    
+    if playlist_id not in playlists_settings:
+        playlists_settings[playlist_id] = {
+            "allowed": allow_value,
+            "conditions": []
+        }
+
+    else:
+        playlists_settings[playlist_id]["allowed"] = allow_value
+
+    collection.update_one({"email": owner_email}, {"$set":{"guest_settings.playlists_settings": playlists_settings}})
+
+
+def add_allow_playlist_condition(owner_email, playlist_id, new_condition):
+    user_data = get_user_data(owner_email)
+    playlists_settings = user_data["guest_settings"]["playlists_settings"]
+    
+    if playlist_id not in playlists_settings:
+        playlists_settings[playlist_id] = {
+            "allowed": True,
+            "conditions": [new_condition]
+        }
+
+    else:
+        playlists_settings[playlist_id]["conditions"].append(new_condition)
+
+    collection.update_one({"email": owner_email}, {"$set":{"guest_settings.playlists_settings": playlists_settings}})
+
+
+def delete_allow_playlist_condition(owner_email, playlist_id, condition_id):
 
     user_data = get_user_data(owner_email)
     playlists_settings = user_data["guest_settings"]["playlists_settings"]
+    
+    if playlist_id in playlists_settings:
+        for index, condition in enumerate(playlists_settings[playlist_id]["conditions"]):
+            if condition["id"] == condition_id:
+                playlists_settings[playlist_id]["conditions"].pop(index)
+                break
 
-    for playlist_id in new_settings:
-        if playlist_id not in playlists_settings:
-            playlists_settings[playlist_id] = {}
-
-        if "allowed" in new_settings[playlist_id]:
-            playlists_settings[playlist_id]["allowed"] = new_settings[playlist_id]["allowed"]
-
-    collection.update_one({"email":owner_email}, {"$set":{"guest_settings.playlists_settings": playlists_settings}})
-
-    updated_user_data = get_user_data(owner_email)
-    updated_playlists_settings = updated_user_data["guest_settings"]["playlists_settings"]
-
-    return updated_playlists_settings
+    collection.update_one({"email": owner_email}, {"$set":{"guest_settings.playlists_settings": playlists_settings}})
 
 
 def check_if_playlist_is_allowed_by_user(user_data, playlist_id):
     
     playlists_access_settings = user_data["guest_settings"]["playlists_settings"]
 
-    # Si hay una configuración seteada para la playlist se evalua:
+    # Si hay una configuración seteada para la playlist se evalua
     if playlist_id in playlists_access_settings:
 
-        if playlists_access_settings[playlist_id].get("allowed") is True:
+        if playlists_access_settings[playlist_id].get("allowed") is False:
+            return False
+        
+        if playlists_access_settings[playlist_id].get("conditions"):
+            for condition in playlists_access_settings[playlist_id]["conditions"]:
+                if _playlist_allow_condition_evaluation(condition) is True:
+                    return True
+                
+            # Si ninguna de la condiciones se evaluó como verdadera se retorna False
+            return False
+        
+        # Si "allowed" no es False, y no hay condiciones configuradas
+        else:
             return True
 
-        # (Aca se pueden validar playlists por otras condiciones como horarios o dias)
+    # Si no hay nada configurado para la playlist simplemente se considera habilitada
+    return True
 
-    # Si no hay nada configurado para la playlist simplemente se agrega:
-    else:   
+
+def _playlist_allow_condition_evaluation(playlist_allow_condition):
+    """ La estructura esperada de una condición de habilitación de playlist es:
+        {
+            "id": uuid,
+            "day": int,
+            "init_time": str ("HH:MM"),
+            "end_time": str ("HH:MM"),
+            "timezone": str,
+        }
+    """
+    # Obtener los datos de la condición
+    day = playlist_allow_condition.get("day")
+    init_time_str = playlist_allow_condition.get("init_time")
+    end_time_str = playlist_allow_condition.get("end_time")
+    timezone_str = playlist_allow_condition.get("timezone")
+
+    # Convertir la hora de inicio y fin a objetos time
+    init_time = datetime.strptime(init_time_str, "%H:%M").time()
+    end_time = datetime.strptime(end_time_str, "%H:%M").time()
+
+    try:
+        # Obtener la zona horaria del diccionario
+        timezone = pytz.timezone(timezone_str)
+    except pytz.exceptions.UnknownTimeZoneError:
+        # En caso de error al obtener la zona horaria, establecer la zona de Buenos Aires
+        timezone = pytz.timezone("America/Buenos_Aires")
+
+    # Obtener la hora actual en la zona horaria dada
+    current_time = datetime.now(timezone).time()
+
+    # Obtener el día de la semana actual (0 para lunes, 1 para martes, etc.)
+    current_day = datetime.now(timezone).weekday()
+
+    # Validar si se cumplen las condiciones
+    if (day == current_day or day == -1) and init_time <= current_time <= end_time:
         return True
+    else:
+        return False
 
 
 # ? App register for recently added tracks by guests ---------------------------------------

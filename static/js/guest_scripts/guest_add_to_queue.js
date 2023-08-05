@@ -7,7 +7,7 @@ function setTrackIemsEventListeners(){
 
     function addTrackToQueue(trackURI, playlistTrackIndex){
 
-        fetch("/guest/api/queue", {
+        return fetch("/guest/api/queue", {
             method:"POST",
             headers: {
                 "Content-Type": "application/json"
@@ -38,11 +38,13 @@ function setTrackIemsEventListeners(){
     addToQueueBtns.forEach(btn => {
 
         if (!btn.hasAddToQueueEvent){
-            btn.addEventListener("click", () => {
+            btn.addEventListener("click", async () => {
+                btn.disabled = true;
                 const btnCardContainer = btn.parentNode;
                 const trackURI = btnCardContainer.getAttribute("data-item-uri");
                 const playlistTrackIndex = btnCardContainer.getAttribute("data-playlist-track-index");
-                addTrackToQueue(trackURI, playlistTrackIndex);
+                await addTrackToQueue(trackURI, playlistTrackIndex);
+                btn.disabled = false;
             });
             btn.hasAddToQueueEvent = true;
         }        

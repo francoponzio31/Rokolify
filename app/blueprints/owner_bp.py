@@ -1,9 +1,8 @@
 from flask import Blueprint, render_template, current_app, url_for, session, send_file, request, jsonify
 from itsdangerous import URLSafeSerializer
-import json
 from ..services.spotify_user_account_service import get_user_playlists, get_user_profile
 from ..services.spotify_user_playback_service import get_available_devices
-from ..services.rokolify_users_service import get_user_data, update_guest_permission, update_playlists_access_settings, update_user
+from ..services.rokolify_users_service import get_user_data, update_guest_permission, set_allow_playlist_settings, delete_allow_playlist_condition, add_allow_playlist_condition, update_user
 from ..blueprints.spotify_auth import get_access_token
 from ..utilities import generate_qr_img
 from ..validators import host_session_required, user_has_linked_spotify_account
@@ -53,7 +52,7 @@ def owner_settings_for_guests():
     user_data = get_user_data(owner_email)
     spotify_access_token = get_access_token(user_data)
 
-    guest_url = generate_guest_url(owner_email)
+    guest_url = _generate_guest_url(owner_email)
     
     playlists_amount_to_show = 20
     playlists_succes, playlists_response = get_user_playlists(spotify_access_token, limit=playlists_amount_to_show)
@@ -64,8 +63,6 @@ def owner_settings_for_guests():
 
     user_data = get_user_data(owner_email)
     guest_permissions = user_data["guest_settings"]["guest_permissions"]
-    playlists_access_settings = user_data["guest_settings"]["playlists_settings"]
-    playlists_settings = json.dumps(playlists_access_settings)
 
     context = {
         "guest_url": guest_url,
@@ -82,7 +79,6 @@ def owner_settings_for_guests():
         "cooldown_time_to_add": user_data["guest_settings"].get("cooldown_time_to_add", 0),
 
         # Playlist settings:
-        "playlists_settings": playlists_settings,
         "playlists_amount_to_show": playlists_amount_to_show
     }
 
@@ -137,28 +133,75 @@ def update_guest_permissions():
         return jsonify({"success": False, "message": "Acción rechazada", "status_code": 403})
 
 
-    return {"message": "La operación se realizó correctamente"}
+    return jsonify({"message": "La operación se realizó correctamente"})
 
 
-@owner_bp.put("/owner/api/playlists_settings")
+@owner_bp.get("/owner/api/playlists_settings")
 @host_session_required
-def update_playlists_settings():
+def get_playlists_settings():
 
     owner_email = session["host_session"]["user_email"]
-    request_body = request.json
+    user_data = get_user_data(owner_email)
+    playlists_access_settings = user_data["guest_settings"]["playlists_settings"]
 
-    # ------------ Validaciones de los datos enviados:
-    if not request_body or type(request_body) != dict:
+    return jsonify(playlists_access_settings)
+
+
+@owner_bp.put("/owner/api/set_allow_playlist_value/<string:playlist_id>")
+@host_session_required
+def set_allow_playlist_value(playlist_id):
+
+    request_body = request.json
+    if not request_body or (type(request_body) != dict) or "allow_value" not in request_body or not isinstance(request_body["allow_value"], bool):
+        return jsonify({"success": False, "message": "Acción rechazada", "status_code": 403}), 403
+    
+    owner_email = session["host_session"]["user_email"]
+    allow_value = request_body["allow_value"]
+    set_allow_playlist_settings(owner_email, playlist_id, allow_value)
+
+    return jsonify({"message": "La operación se realizó correctamente"})
+
+
+@owner_bp.post("/owner/api/add_playlist_condition/<string:playlist_id>")
+@host_session_required
+def add_playlist_condition(playlist_id):
+
+    import uuid
+
+    request_body = request.json
+    if not request_body or (type(request_body) != dict) or "new_permision" not in request_body:
+        return jsonify({"success": False, "message": "Acción rechazada", "status_code": 403}), 403
+    
+    if not _time_interval_is_valid(request_body["new_permision"]["init_time"], request_body["new_permision"]["end_time"]):
+        return jsonify({"success": False, "message": "Datos inválidos", "status_code": 403}), 403
+
+    new_condition = {
+        "id": str(uuid.uuid4()),
+        "day": int(request_body["new_permision"]["day"]),
+        "init_time": request_body["new_permision"]["init_time"],
+        "end_time": request_body["new_permision"]["end_time"],
+        "timezone": request_body["new_permision"]["timezone"],
+    }
+    
+    owner_email = session["host_session"]["user_email"]
+    add_allow_playlist_condition(owner_email, playlist_id, new_condition)
+
+    return jsonify({"message": "La operación se realizó correctamente"})
+
+
+@owner_bp.delete("/owner/api/delete_playlist_condition/<string:playlist_id>")
+@host_session_required    
+def delete_playlist_condition(playlist_id):
+
+    request_body = request.json
+    if not request_body or (type(request_body) != dict) or "condition_id" not in request_body:
         return jsonify({"success": False, "message": "Acción rechazada", "status_code": 403}), 403
 
-    # ------------ Validaciones de los datos enviados:
+    owner_email = session["host_session"]["user_email"]
+    condition_id = request_body["condition_id"]
+    delete_allow_playlist_condition(owner_email, playlist_id, condition_id)
 
-    # Se pasaron las validaciones:
-    new_settings = request_body
-
-    updated_settings = update_playlists_access_settings(owner_email, new_settings)
-
-    return jsonify(updated_settings)
+    return jsonify({"message": "La operación se realizó correctamente"})
 
 
 @owner_bp.get("/owner/api/get_playlists/<int:offset>/<int:limit>")
@@ -175,7 +218,7 @@ def get_more_playlists(offset, limit):
     if success:
         return jsonify({"success": True, "status_code": 200, "playlists": allowed_playlists})
     else:
-        return {"success": False, "message":"Error al obtener las playlists"}
+        return jsonify({"success": False, "message":"Error al obtener las playlists"})
 
 
 @owner_bp.get("/owner/api/unlink_spotify_account")
@@ -188,7 +231,7 @@ def unlink_spotify_account():
     return jsonify({"success": True, "status_code": 200})
 
 
-def generate_guest_url(owner_email):
+def _generate_guest_url(owner_email):
 
     serializer = URLSafeSerializer(current_app.secret_key)
     data = {"host_email": owner_email}
@@ -198,3 +241,19 @@ def generate_guest_url(owner_email):
     guest_url = f"{BASE_URL}/guest/gateway/{token}"
 
     return guest_url
+
+
+from datetime import time
+
+def _time_interval_is_valid(init_time, end_time):
+    # Se esperan horarios con el formato "HH:MM"
+
+    init_hour, init_minutes = map(int, init_time.split(':'))
+    end_hour, end_minutes = map(int, end_time.split(':'))
+
+    # Convertir los horarios a objetos de tipo time
+    init_time = time(init_hour, init_minutes)
+    end_time = time(end_hour, end_minutes)
+
+    # Comparar los horarios
+    return init_time < end_time
