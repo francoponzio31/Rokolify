@@ -17,7 +17,7 @@ const playlistTrackItemHtml = (trackName, trackImageURL, artist, trackId, trackU
     </div>
 
     <button type="button" class="btn btn-primary btn-sm add-to-queue-btn rounded-pill">
-        <img src="${addToQueueIconPath}" alt="add-to-queue-btn-icon">
+        <img src="/static/img/bx-list-plus.svg" alt="add-to-queue-btn-icon">
     </button>
     </div>`
 }

@@ -189,6 +189,7 @@ def add_item_to_queue(spotify_access_token, item_uri, device_id=None):
 
     return False, {"status_code": response.status_code}
 
+
 def add_playlist_to_queue(spotify_access_token, playlist_id, device_id=None):
 
     #TODO: Desarrollar esta funcion para automatizar el reproductor

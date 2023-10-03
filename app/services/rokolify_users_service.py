@@ -31,6 +31,72 @@ def update_guest_permission(owner_email, permission, new_value):
     return {"updated_user_email":owner_email}
 
 
+# ? Access links -------------------------------------------------
+
+def add_guest_access_link(owner_email, new_access_link):
+    user_data = get_user_data(owner_email)
+    user_data["guest_access_links"].append(new_access_link)
+
+    collection.update_one({"email": owner_email}, {"$set":{"guest_access_links": user_data["guest_access_links"]}})
+
+
+def delete_guest_access_link(owner_email, guest_access_link_id):
+
+    user_data = get_user_data(owner_email)
+    guest_access_links = user_data["guest_access_links"]
+    
+    for index, link in enumerate(guest_access_links):
+        if link["id"] == guest_access_link_id:
+            guest_access_links.pop(index)
+
+    collection.update_one({"email": owner_email}, {"$set":{"guest_access_links": guest_access_links}})
+
+
+def clean_expired_access_links(owner_email):
+
+    user_data = get_user_data(owner_email)
+    guest_access_links = user_data["guest_access_links"]
+    updated_guest_access_links = [
+        link for link in guest_access_links if validate_access_link_expiration(link)
+    ]
+    
+    collection.update_one({"email": owner_email}, {"$set":{"guest_access_links": updated_guest_access_links}})
+
+
+def validate_access_link_existence(owner_email, access_link_id):
+    user_data = get_user_data(owner_email)
+    guest_access_links = user_data["guest_access_links"]
+    for link in guest_access_links:
+        if link["id"] == access_link_id:
+            return True
+    
+    return False
+
+
+def validate_access_link_expiration(access_link_data):
+
+    try:
+        if access_link_data["expiration_datetime"]:
+            try:
+                # Obtener la zona horaria del diccionario
+                timezone = pytz.timezone(access_link_data["timezone"])
+            except pytz.exceptions.UnknownTimeZoneError:
+                # En caso de error al obtener la zona horaria, establecer la zona de Buenos Aires
+                timezone = pytz.timezone("America/Buenos_Aires")
+
+            # Obtener la hora actual en la zona horaria dada
+            current_time = datetime.now(timezone)
+            link_expiration_datetime = timezone.localize(datetime.strptime(access_link_data["expiration_datetime"], "%d/%m/%Y %H:%M"))
+
+            if link_expiration_datetime < current_time:
+                return False
+
+        return True
+    
+    except ValueError:  # formato invalido
+        return False  
+
+
 # ? Playlist access settings -------------------------------------------------
 def set_allow_playlist_settings(owner_email, playlist_id, allow_value):
     user_data = get_user_data(owner_email)
@@ -105,15 +171,7 @@ def check_if_playlist_is_allowed_by_user(user_data, playlist_id):
 
 
 def _playlist_allow_condition_evaluation(playlist_allow_condition):
-    """ La estructura esperada de una condición de habilitación de playlist es:
-        {
-            "id": uuid,
-            "day": int,
-            "init_time": str ("HH:MM"),
-            "end_time": str ("HH:MM"),
-            "timezone": str,
-        }
-    """
+
     # Obtener los datos de la condición
     day = playlist_allow_condition.get("day")
     init_time_str = playlist_allow_condition.get("init_time")

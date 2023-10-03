@@ -281,26 +281,24 @@ function renderPlaylistSettings(playlistId, playlistAllowedConditions){
 
         playlistAllowedConditions.forEach((condition) => {
             // Crear una nueva fila en la tabla con los valores ingresados y el botón de eliminar
-            const nuevaFila =
+            const newRow =
             `<tr>
-                <td>${dayNameMap[condition.day]}</td>
-                <td>${condition.init_time}</td>
-                <td>${condition.end_time}</td>
+                <td class="align-middle">${dayNameMap[condition.day]}</td>
+                <td class="align-middle">${condition.init_time}</td>
+                <td class="align-middle">${condition.end_time}</td>
                 <td>
-                    <button data-condition-id=${condition.id} class="btn btn-danger rounded-3 btnEliminar" style="padding: .1rem .2rem">
-                        <svg alt="Borrar Entrada" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 26 28" style="fill: rgba(220, 220, 220, 1);">
-                        <path d="M5 20a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8h2V6h-4V4a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v2H3v2h2zM9 4h6v2H9zM8 8h9v12H7V8z"></path><path d="M9 10h2v8H9zm4 0h2v8h-2z"></path>
-                        </svg>
+                    <button data-condition-id=${condition.id} class="btn btn-danger rounded-3 playlist-condition-delete-btn" style="padding: .1rem .2rem">
+                        <img src="/static/img/trash.svg">
                     </button>
                 </td>
             </tr>`;
             
             // Agregar la nueva fila al cuerpo de la tabla
-            conditionsGridBody.insertAdjacentHTML("beforeend", nuevaFila);
+            conditionsGridBody.insertAdjacentHTML("beforeend", newRow);
             
             // Asignar la funcionalidad de eliminación a los nuevos botones
-            const botonesEliminar = document.querySelectorAll(".btnEliminar");
-            botonesEliminar.forEach(function(btn) {
+            const deleteBtns = document.querySelectorAll(".playlist-condition-delete-btn");
+            deleteBtns.forEach(function(btn) {
 
                 if (!btn.deleteConditionEvent){
                     btn.addEventListener("click", async () => {

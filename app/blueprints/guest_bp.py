@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, current_app, jsonify, ses
 from ..services.spotify_user_account_service import get_user_playlists, get_user_profile
 from ..services.spotify_catalog_service import get_playlist, get_playlist_items, search_tracks_in_catalog, get_track, get_artist, check_if_playlist_is_in_user_playlists,  check_if_track_is_in_playlist
 from ..services.spotify_user_playback_service import add_item_to_queue, get_user_queue, get_available_devices, skip_to_next, push_to_player
-from ..services.rokolify_users_service import get_user_data, check_if_track_was_recently_added_by_guests, add_recently_added_track_by_guest, check_if_guest_is_allowed_to_add_to_queue, check_if_playlist_is_allowed_by_user
+from ..services.rokolify_users_service import get_user_data, check_if_track_was_recently_added_by_guests, add_recently_added_track_by_guest, check_if_guest_is_allowed_to_add_to_queue, check_if_playlist_is_allowed_by_user, validate_access_link_existence, validate_access_link_expiration
 from ..blueprints.spotify_auth import get_access_token
 from ..validators import guest_session_required, owner_with_linked_spotify_account_validation, owner_with_guest_access_allowed_validation
 from itsdangerous import URLSafeSerializer
@@ -17,8 +17,15 @@ guest_bp = Blueprint("guest_bp", __name__)
 @guest_bp.get("/guest/gateway/<token>")
 def guest_gateway(token):
     serializer = URLSafeSerializer(current_app.secret_key)
-    data = serializer.loads(token)
-    host_email = data["host_email"]
+    access_link_data = serializer.loads(token)
+    host_email = access_link_data["host_email"]
+    
+    if (
+        not validate_access_link_existence(host_email, access_link_data["id"])
+        or not validate_access_link_expiration(access_link_data)
+    ):
+        return render_template("generic_page.html", title="Link de acceso inválido", content="<h1> El link para acceder a la sección de invitados no es válido. </h1>")
+
     # Se añade el identificador de la cuenta huesped a la sesion:
     session["guest_session"] = {
         "guest_id": str(uuid.uuid4()),
@@ -57,8 +64,7 @@ def show_allowed_playlists():
         if free_mode:
             return redirect(url_for("guest_bp.guest_search_page"))
         else:
-            return render_template("guest_templates/guest_no_resources_allowed.html")
-
+            return render_template("generic_page.html", title="Sin recursos disponibles", content="<h1> No hay recursos habilitados por el propietario de la cuenta... </h1>")
 
     context = {
         "allowed_playlists": allowed_playlists,

@@ -32,7 +32,7 @@ def owner_with_linked_spotify_account_validation(owner_user_data):
                 "generic_page.html", 
                 content="""
                     <h1> Acceso no permitido </h1>
-                    <p class="mt-3"> El acceso a esta sección no está permitido. El usuario anfitrión debe tener una cuanta de Spotify vinculada para acceder a este recurso.</p>
+                    <p class="mt-3 text-center"> El acceso a esta sección no está permitido. El usuario anfitrión debe tener una cuanta de Spotify vinculada para acceder a este recurso.</p>
                 """
             )
         )
@@ -45,7 +45,7 @@ def owner_with_guest_access_allowed_validation(owner_user_data):
                 "generic_page.html", 
                 content="""
                     <h1> Acceso no permitido </h1>
-                    <p class="mt-3"> El acceso a la sección de invitados está deshabilitado. El usuario anfitrión ha desactivado la intervención de invitados.</p>
+                    <p class="mt-3 text-center"> El acceso a la sección de invitados está deshabilitado. El usuario anfitrión ha desactivado la intervención de invitados.</p>
                 """
             )
         )

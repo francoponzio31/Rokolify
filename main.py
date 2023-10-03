@@ -44,6 +44,7 @@ def handle_exception(error):
 
     # Manejo de excepciones ocacionadas en la lógica en ambiente productivo:
     else:
+        current_app.logger.exception(error)
         return render_template("generic_page.html", content="<h1> Lo sentimos, se ha producido un error. </h1>")
 
 

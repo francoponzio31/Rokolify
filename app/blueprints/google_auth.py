@@ -64,11 +64,23 @@ def google_auth_callback():
 
         # Si no existe ningún usuario con ese email se crea uno nuevo:
         if not user_data:
-            new_user = User(email=user_email, name=google_user_info["name"], profile_picture_url=google_user_info["picture"])
+            new_user = User(
+                email=user_email,
+                name=google_user_info["name"],
+                given_name=google_user_info["given_name"],
+                family_name=google_user_info["family_name"],
+                profile_picture_url=google_user_info["picture"]
+            )
+
             add_user(new_user)
         
         else: # Si ya existe actualizo sus datos por si cambiaron
-            update_user(user_email, {"name":google_user_info["name"], "profile_picture":google_user_info["picture"]})
+            update_user(user_email, {
+                "name": google_user_info["name"],
+                "given_name": google_user_info["given_name"],
+                "family_name": google_user_info["family_name"],
+                "profile_picture": google_user_info["picture"]
+            })
 
         # Se valida que se haya podido crear el usuario:
         if not get_user_data(user_email):

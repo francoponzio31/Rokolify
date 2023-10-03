@@ -57,9 +57,7 @@
     
 {% block scripts %}
     {{ super() }}
-    <script src="{{url_for('static', filename='js/guest_scripts/guest_search_button.js')}}"></script>
-    
-    <script> const addToQueueIconPath = "{{url_for('static', filename='img/bx-list-plus.svg')}}"; </script>
+    <script src="{{url_for('static', filename='js/guest_scripts/guest_search_button.js')}}"></script>    
     <script src="{{url_for('static', filename='js/guest_scripts/guest_add_to_queue.js')}}"></script>
 
 {% endblock %}

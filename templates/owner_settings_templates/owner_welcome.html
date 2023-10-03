@@ -1,0 +1,50 @@
+{% extends "owner_settings_templates/owner_settings_base_template.html" %}
+
+{% block head %}
+    {{ super() }}
+{% endblock %}
+
+{% block title %}
+    {{ super() }}
+    Inicio
+{% endblock %}
+
+{% block main_content %}
+
+    <!-- Bienvenida -->
+    <section class="p-4 border rounded-3" style="margin-top: 3.5rem;">                
+        <h2 class="fs-1 mb-3">¡Te damos la bienvenida, {{ rokolify_profile["given_name"].capitalize() }}!</h2>
+
+        <div style="font-size: 1.1rem;">
+            <p style="text-indent: .3em;">
+            Con Rokolify crea una experiencia musical compartida usando Spotify. Habilita tu reproductor de Spotify para que tus amigos agreguen la música que quieran escuchar a la cola de reproducción.
+            </p>
+                
+            <p class="mb-1">¿Cómo funciona?</p>
+            <ul>
+                <li><b>Configura tu cuenta:</b> Primero, enlaza tu cuenta de Spotify. Luego, puedes elegir qué canciones pueden agregar tus invitados, ya sea seleccionándolas de tus playlists o buscando cualquier canción dentro del catálogo de Spotify.</li>
+                <li><b>Invita a tus amigos:</b> Comparte el enlace de acceso para invitados con tus amigos para que puedan unirse a la diversión.</li>
+                <li><b>Agregar canciones:</b> Cada invitado puede agregar canciones a la cola de reproducción de Spotify.</li>
+                <li><b>Disfruta juntos:</b> Escucha las canciones que todos eligen, creando una experiencia musical única.</li>
+            </ul>
+
+            <p class="mb-1">Características clave:</p>
+            <ul>
+                <li><b>Fácil de usar:</b> Navega, busca y agrega canciones de Spotify sin complicaciones.</li>
+                <li><b>Colaborativo:</b> Deja que tus amigos influyan en la música y mantén la fiesta en marcha.</li>
+                <li><b>Integración con Spotify:</b> Todas las canciones se reproducen directamente desde tu cuenta de Spotify, y tienes su catálogo a disposición.</li>
+            </ul>
+
+            <p class="mb-4">¡Descubre Rokolify y añade un toque especial a la musicalización de tus eventos!</p>
+
+            <a class="btn btn-primary" href="{{ url_for('owner_bp.account_settings') }}" role="button">
+                Configura tu cuenta
+            </a>
+        </div>
+    </section>
+
+{% endblock %}
+    
+{% block scripts %}
+    {{ super() }}   
+{% endblock %}

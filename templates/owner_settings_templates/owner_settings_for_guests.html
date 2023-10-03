@@ -24,52 +24,122 @@
         {% if not linked_spotify_account_validation%}
             <p class="mt-2 fs-5"> Para configurar la sección de invitados primero debes vincular una cuenta de Spotify. </p>
         {% else %}
-            
-            <!-- Links de acceso a invitados -->
-            <section class="p-4 border rounded-3">                
-                <h2 class="fs-4">Acceso a sección de invitados</h2>
 
-                <div class="mb-3">
-                    <label class="form-label">URL de acceso para invitados</label>
-                    <div class="input-group">
-                        <span class="input-group-text form-control overflow-hidden">
-                            <a id="guest-url-link" href="{{ guest_url }}" target="_blank" class="text-decoration-none text-primary-emphasis">{{ guest_url }}</a>
-                        </span>
-                        <button id="copy-url-btn" type="button" class="btn btn-primary">
-                            <img src="{{url_for('static', filename='img/bxs-copy.svg')}}" alt="copy-btn-icon">
-                            Copiar
-                        </button>
-                    </div>                
+            <section class="p-4 border rounded-3 d-flex flex-column gap-3">
+    
+                <h2 class="fs-4">Links de acceso para invitados</h2>
+                <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+
+                    <table class="table table-responsive">
+                        <thead>
+                            <tr>
+                                <th>Descripción</th>
+                                <th>Link</th>
+                                <th>Creado</th>
+                                <th>Vence</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="access-links-grid" class="d-none">
+                        </tbody>
+                    </table>
+                    <!-- Load sipinner -->
+                    <div id="access-links-grid-load-spinner" class="d-flex justify-content-center py-3">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Empty message -->
+                    <div id="access-links-grid-empty-message" class="mb-2 d-none">
+                        <span class="fs-6 ps-3">Todavia no has creado ningún link de acceso para invitados</span>
+                    </div>
+                    
                 </div>
-
-
-                <!-- Button trigger QR modal -->
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                    <img src="{{url_for('static', filename='img/qr-code.svg')}}" alt="qr-btn-icon">
-                    Generar QR
-                </button>
                 
-                <!-- QR Modal -->
-                <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h1 class="modal-title fs-5" id="exampleModalLabel">QR de acceso para invitados</h1>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                                <div class="modal-body">
-                                    <img class="rounded-3 w-100" src="{{get_qr_url}}?guest_url={{guest_url}}">
+                <button id="create-access-link-btn" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addLinkModal">
+                    Crear nuevo link de acceso
+                </button>
+            </section>
+
+            <!-- QR modal -->
+            <div class="modal fade" id="qrModal" tabindex="-1" aria-labelledby="qrModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="qrModalLabel">QR de acceso para invitados</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                            <div class="modal-body d-flex align-items-center justify-content-center">
+                                <img id="access-link-qr-img" class="rounded-3 w-100 h-100 d-none" src="">
+                                <!-- Load sipinner -->
+                                <div id="qr-modal-load-spinner" class="d-flex justify-content-center" style="padding:6rem 0">
+                                    <div class="spinner-border" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
                                 </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                                <a href="{{get_qr_url}}?guest_url={{guest_url}}" class="btn btn-primary">Descargar QR</a>
                             </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                            <a id="access-link-qr-download-link" href="" class="btn btn-primary">Descargar QR</a>
                         </div>
                     </div>
                 </div>
-            </section>
+            </div>
 
+            <!-- Delete link modal -->
+            <div class="modal fade" id="deleteLinkModal" tabindex="-1" aria-labelledby="deleteLinkModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="deleteLinkModalLabel">Confirmar acción</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                            <div class="modal-body">
+                                <p class="fw-bolder" style="font-size: 1.28rem">¿Estás seguro de que quieres borrar este link de acceso?</p>
+                                <p class="mb-0" style="font-size: 1.05rem">Al eliminar este link de acceso para invitados ya no se podrá volver a acceder a la sección de invitados a través de este link.</p>
+                            </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="button" id="access-link-confirm-delete-btn" class="btn btn-danger" data-bs-dismiss="modal">Confirmar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add link modal -->
+            <div class="modal fade" id="addLinkModal" tabindex="-1" aria-labelledby="addLinkModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="addLinkModalLabel">Crear link de acceso para invitados</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form>
+                                <div class="row mb-3 gap-0 row-gap-3">
+                                    <div class="col-xl-6">
+                                        <label for="access-link-description-input" class="form-label">Descripción</label>
+                                        <input class="form-control" id="access-link-description-input" required maxlength="80">
+                                    </div>
+                                    <div class="col-xl-6">
+                                        <label class="form-label" for="access-link-day-input">Fecha de vencimiento (opcional)</label>
+                                        <input type="datetime-local" id="access-link-datetime-input" class="form-control">
+                                    </div>
+                                    <div id="access-link-validation-message" class="form-text d-flex justify-content-end d-none" style="color:#ff4949">
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-end gap-2 mt-4">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                    <button type="button" id="add-access-link-btn" class="btn btn-primary">Crear</button>
+                                </div>
+                            </form>                        
+                        </div>
+                    </div>
+                </div>
+            </div>
             
+
             <!-- Control de permisos de invitados -->
             <section class="p-4 border rounded-3  d-flex flex-column gap-3">
 
@@ -148,20 +218,20 @@
                         <input class="form-check-input user-setting-switch" type="checkbox" role="button" id="owner-playlists-access-switch" name="playlist-access" {% if owner_playlists_access == True %} checked {% endif %}>
                         <label class="form-check-label">
                             <span class="me-3">Acceso a mis playlists</span>
-                            <a tabindex="0" class="btn btn-secondary rounded-pill py-0 px-1" data-bs-container="body" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="Habilita a los invitados a acceder a tus playlists habilitadas y agregar sus canciones a la cola de reproducción.">
+                            <a tabindex="0" class="btn btn-secondary rounded-pill py-0 px-1" data-bs-container="body" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="Habilita a los invitados a visualizar tus playlists habilitadas y agregar sus canciones a la cola de reproducción. Las playlists disponibles seran todas las que hayas creado o que sigas con tu cuenta de Spotify vinculada.">
                                 <img src="{{url_for('static', filename='img/question-lg.svg')}}">
                             </a>
                         </label>
                     </div>
                     <button type="button" id="owner-playlists-settings-btn" class="btn btn-primary align-self-start" data-bs-toggle="modal" data-bs-target="#paylist-settings">
-                        Configurar acceso a mis playlists
+                        Configurar mis playlists habilitadas
                     </button>
                         
                     <div class="modal fade" id="paylist-settings" data-bs-keyboard="false" tabindex="-1" aria-labelledby="paylist-settings-label" aria-hidden="true">
                         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
                             <div class="modal-content">
                                 <div class="modal-header">
-                                    <h3 class="modal-title fs-5" id="paylist-settings-label">Configuración de acceso a playlists</h3>
+                                    <h3 class="modal-title fs-5" id="paylist-settings-label">Habilitar playlists para invitados</h3>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body container" style="height: 100vh;">
@@ -171,7 +241,9 @@
 
                                             <div class="playlist-setting-card card mx-1" data-playlist-uri="{{ playlist['uri'] }}">
                                                 <div class="card-header d-flex align-items-center">
-                                                    <img src="{{ playlist['images'][0]['url'] }}" class="img-thumbnail img-thumbnail-playlist playlist-image object-fit-cover me-3" style="width: 55px; height: 55px;" alt="playlist-image">
+                                                    {% if playlist['images'] %}
+                                                        <img src="{{ playlist['images'][0]['url'] }}" class="img-thumbnail img-thumbnail-playlist playlist-image object-fit-cover me-3" style="width: 55px; height: 55px;" alt="playlist-image">
+                                                    {% endif %}
                                                     <h2 class="fs-4 card-title my-0">{{ playlist["name"] }}</h2>
                                                 </div>
                                                 <div class="card-body d-flex align-items-center justify-content-around">
@@ -270,8 +342,8 @@
                                                     <input type="time" class="form-control" id="allow-playlist-end-time-input" value="23:59">
                                                 </div>
                                             </div>
-                                            <div id="allow-condition-validation-message" class="d-flex justify-content-end my-2 d-none">
-                                                <span style="font-size: .9rem; color:#ff7070">
+                                            <div id="allow-condition-validation-message" class="d-flex justify-content-end d-none">
+                                                <span class="form-text" style="color:#ff4949">
                                                     El horario de fin debe ser posterior al horario de inicio
                                                 </span>
                                             </div>
@@ -287,18 +359,20 @@
                                         <div class="row my-4">
                                             <h2 class="fs-5">Horarios habilitados</h2>
                                             <div class="col-md-12">
-                                                <table class="table">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Día</th>
-                                                            <th>Horario de inicio</th>
-                                                            <th>Horario de fin</th>
-                                                            <th></th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody id="allow-playlist-conditions-grid">
-                                                    </tbody>
-                                                </table>
+                                                <div class="table-responsive">
+                                                    <table class="table">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Día</th>
+                                                                <th>Horario de inicio</th>
+                                                                <th>Horario de fin</th>
+                                                                <th></th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody id="allow-playlist-conditions-grid">
+                                                        </tbody>
+                                                    </table>
+                                                </div>
                                                 <!-- Empty message -->
                                                 <div id="allow-conditions-grid-empty-message">
                                                     <span class="fs-6 ps-3">Aun no has agregado ningún horario</span>
@@ -338,15 +412,18 @@
 {% block scripts %}
     <!-- Dejar estos script antes que los de bootstrap (dentro del bloque super), ya que necesito que se ejecute este codigo rapido y al estar el de bootstrap primero hace que se retarde su ejecución -->
     <script src="{{url_for('static', filename='js/owner_scripts/owner_guest_settings_events.js')}}"></script>
-
+    
     <script> const playlistsAmountToShow = "{{ playlists_amount_to_show }}" ; </script>
     <script src="{{url_for('static', filename='js/owner_scripts/owner_playlists_settings_events.js')}}"></script>
-
+    
     {{ super() }}
 
-    <script src="{{url_for('static', filename='js/tooltips_init.js')}}"></script>
+    <!-- luxon -->
+    <script src="https://cdn.jsdelivr.net/npm/luxon@2.1.0/build/global/luxon.min.js"></script>
 
-    <script src="{{url_for('static', filename='js/owner_scripts/owner_copy_url.js')}}"></script>
+    <script src="{{url_for('static', filename='js/owner_scripts/owner_access_links_settings_events.js')}}"></script>
+
+    <script src="{{url_for('static', filename='js/tooltips_init.js')}}"></script>
 
     <script> let linkedpotifyAccountValidation = "{{linked_spotify_account_validation}}"; </script>
     <script> let devicesValidation = "{{available_devices_existence}}"; </script>

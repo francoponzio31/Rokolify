@@ -75,7 +75,6 @@
     <script src="{{url_for('static', filename='js/guest_scripts/guest_add_to_queue.js')}}"></script>
     
     {% if next_tracks_url %}
-        <script> const addToQueueIconPath = "{{url_for('static', filename='img/bx-list-plus.svg')}}"; </script>
         <script> let nextItemsUrl = "{{next_tracks_url}}".replace(/amp;/g, ""); </script>
         <script src="{{url_for('static', filename='js/guest_scripts/guest_load_more_tracks.js')}}"></script>
     {% endif %}

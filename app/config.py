@@ -10,7 +10,7 @@ class Config(object):
     DEBUG = True
     TESTING = True
     SESSION_COOKIE_SECURE = True
-    PERMANENT_SESSION_LIFETIME = timedelta(days=1)  # Duración de la cookie de sesión
+    PERMANENT_SESSION_LIFETIME = timedelta(hours=1)  # Duración de la cookie de sesión
     SECRET_KEY = os.getenv("SECRET_KEY")
     GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
     GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")

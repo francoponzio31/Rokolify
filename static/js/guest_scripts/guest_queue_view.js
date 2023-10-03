@@ -80,7 +80,7 @@ function generateQueueListItem(trackURI, trackId, trackName, trackImageURL, arti
         
         ${
             currently_playing
-            ? `<img src="${playIconPath}" alt="play-icon"></img>`
+            ? `<img src="/static/img/play-circle.svg" alt="play-icon"></img>`
             : ""
         }   
     </div>

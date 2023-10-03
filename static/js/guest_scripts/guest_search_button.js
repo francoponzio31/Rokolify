@@ -69,7 +69,7 @@ function generateTrackItem(trackId, trackURI, trackName, artist, trackImageURL){
         </div>
         
         <button type="button" class="btn btn-primary btn-sm add-to-queue-btn rounded-pill">
-        <img src="${addToQueueIconPath}" alt="add-to-queue-btn-icon">
+        <img src="/static/img/bx-list-plus.svg" alt="add-to-queue-btn-icon">
         </button>
     </div>
     `

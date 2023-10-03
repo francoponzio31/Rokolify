@@ -111,8 +111,6 @@
 
 {% block scripts %}
     {{ super() }}
-
-    <script> const playIconPath = "{{url_for('static', filename='img/play-circle.svg')}}"; </script>
     <script src="{{url_for('static', filename='js/guest_scripts/guest_queue_view.js')}}"></script>
 
     <script src="{{url_for('static', filename='js/guest_scripts/guest_track_cards_modal.js')}}"></script>
