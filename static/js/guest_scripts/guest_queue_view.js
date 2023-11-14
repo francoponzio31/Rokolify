@@ -22,7 +22,11 @@ queueModalTrigger.addEventListener("click", ()=>{
 
         queue = data;
     
-        queueItemsContainer.innerHTML = "";
+        queueItemsContainer.innerHTML = `
+        <a href='https://open.spotify.com' target='_blank' class="align-self-start">
+            <img src='/static/img/spotify_logo.png' class="mb-1" style='height: 30px'>
+        </a>
+        `;
         if (queue.currently_playing || queue.queue > 0){
             
             const currentPlayingItem = generateQueueListItem(
@@ -67,10 +71,10 @@ queueModalTrigger.addEventListener("click", ()=>{
 function generateQueueListItem(trackURI, trackId, trackName, trackImageURL, artist, currently_playing=false){
 
     const queueItem = `
-    <div class="track-card card d-flex flex-row align-items-center pe-2 gap-3 bg-dark-subtle border-dark-subtle-subtle" data-item-uri="${trackURI}" data-item-id="${trackId}" data-bs-toggle="modal" data-bs-target="#track-modal">
+    <div class="track-card border rounded-end d-flex flex-row align-items-center pe-2 gap-3 bg-dark-subtle border-dark-subtle-subtle" style="min-height:62px;" data-item-uri="${trackURI}" data-item-id="${trackId}" data-bs-toggle="modal" data-bs-target="#track-modal">
         ${
             trackImageURL
-            ? `<img src="${trackImageURL}" class="item-image rounded-start" style="width:60px; max-height:60px;" alt="item-image">`
+            ? `<img src="${trackImageURL}" class="item-image" style="width:60px; min-width:60px; max-height:60px;" alt="item-image">`
             : ""
         }   
         <div class="w-100 justify-content-between text-truncate">

@@ -64,6 +64,7 @@ def google_auth_callback():
 
         # Si no existe ningún usuario con ese email se crea uno nuevo:
         if not user_data:
+            is_new_user = True
             new_user = User(
                 email=user_email,
                 name=google_user_info["name"],
@@ -75,6 +76,7 @@ def google_auth_callback():
             add_user(new_user)
         
         else: # Si ya existe actualizo sus datos por si cambiaron
+            is_new_user = False
             update_user(user_email, {
                 "name": google_user_info["name"],
                 "given_name": google_user_info["given_name"],
@@ -84,7 +86,7 @@ def google_auth_callback():
 
         # Se valida que se haya podido crear el usuario:
         if not get_user_data(user_email):
-            return render_template("generic_page.html", content="<h1> Lo sentimos, se ha producido un error al registrar al usuario. Intentelo de nuevo.</h1>")
+            return render_template("generic_page.html", content="<h1> We're sorry, there was an error registering the user. Please try again. </h1>")
 
         # Guardo el email del usuario en la sesion:
         session["host_session"] = {
@@ -92,7 +94,7 @@ def google_auth_callback():
         }
         session.permanent = True
 
-        return redirect(url_for("index"))
+        return redirect(url_for("owner_bp.welcome")) if is_new_user else redirect(url_for("owner_bp.account_settings"))
 
     else:
-        return jsonify({"success": False, "message": "Error al ingresar con Google", "status_code": google_user_info_response.status_code}), google_user_info_response.status_code
+        return jsonify({"success": False, "message": "Error when signing in with Google", "status_code": google_user_info_response.status_code}), google_user_info_response.status_code

@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_caching import Cache
 from .blueprints.google_auth import google_auth
 from .blueprints.spotify_auth import spotify_auth
 from .blueprints.owner_bp import owner_bp
@@ -21,6 +22,9 @@ def create_app():
         os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"     # Para permitir usar oauthlib localmente sin https
     else:
         app.config.from_object("app.config.DevelopmentConfig")
+
+    # App cache
+    app.cache = Cache(app)
 
     # Registro de Blueprints:
     app.register_blueprint(google_auth)

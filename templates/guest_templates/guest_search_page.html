@@ -6,7 +6,7 @@
 
 {% block title %}
     {{ super() }}
-    Buscar canción
+    Search for a song
 {% endblock %}
 
 {% block main_content %}
@@ -15,13 +15,13 @@
     <ul class="nav nav-tabs mb-3">
         {% if owner_playlists_access %}
             <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('guest_bp.show_allowed_playlists') }}">Playlists disponibles</a>
+                <a class="nav-link" href="{{ url_for('guest_bp.show_allowed_playlists') }}">Available playlists</a>
             </li>
         {% endif %}
         
         {% if free_mode %}
             <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="#">Buscá una canción</a>
+                <a class="nav-link active" aria-current="page" href="#">Search for a song</a>
             </li>
         {% endif %}
     </ul>
@@ -29,10 +29,10 @@
     <section class="items-section">
 
         <form class="input-group mb-3">
-            <button type="submit" class="btn btn-secondary" id="search-input-btn">
+            <button type="submit" class="btn btn-secondary" style="min-width: 42px;" id="search-input-btn">
                 <img src="{{url_for('static', filename='img/search.svg')}}" alt="search-btn-icon">
                 </button>
-            <input type="text" class="form-control" id="search-input" placeholder="Buscá en el catálogo de Spotify" aria-label="search-input" aria-describedby="search-input-btn">
+            <input type="text" class="form-control" id="search-input" placeholder="Search in the Spotify catalog" aria-label="search-input" aria-describedby="search-input-btn">
         </form>
 
         <div id="search-result-container" class="d-flex flex-column gap-2 px-1">   

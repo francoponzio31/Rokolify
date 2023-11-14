@@ -185,7 +185,7 @@ def add_item_to_queue(spotify_access_token, item_uri, device_id=None):
     response = requests.post(url, headers=headers)
 
     if response.status_code == 204:
-        return True, {"message": "Item agregdo a la cola", "status_code": response.status_code}
+        return True, {"message": "Item added to the queue", "status_code": response.status_code}
 
     return False, {"status_code": response.status_code}
 
@@ -218,7 +218,7 @@ def add_playlist_to_queue(spotify_access_token, playlist_id, device_id=None):
     response = requests.post(url, headers=headers, data=payload)
 
     if response.status_code == 204:
-        return True, {"message": "Item agregdo a la cola", "status_code": response.status_code}
+        return True, {"message": "Item added to the queue", "status_code": response.status_code}
 
     return False, {"status_code": response.status_code}
 
@@ -242,6 +242,6 @@ def skip_to_next(spotify_access_token, device_id=None):
     response = requests.post(url, headers=headers)
 
     if response.status_code == 204:
-        return True, {"message": "Item salteado", "status_code": response.status_code}
+        return True, {"message": "Item skipped", "status_code": response.status_code}
 
     return False, {"status_code": response.status_code}

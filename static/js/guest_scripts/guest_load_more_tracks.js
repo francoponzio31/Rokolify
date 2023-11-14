@@ -5,10 +5,10 @@ const loadSpinner = document.getElementById("load-more-tracks-spinner");
 
 const playlistTrackItemHtml = (trackName, trackImageURL, artist, trackId, trackURI, trackIndexInPlaylist) => {
     return `
-    <div class="track-card card d-flex flex-row align-items-center pe-2 gap-3 bg-dark-subtle border-dark-subtle" data-item-id="${trackId}" data-item-uri="${trackURI}" data-playlist-track-index="${trackIndexInPlaylist}">
+    <div class="track-card border rounded-end d-flex flex-row align-items-center pe-2 gap-3 bg-dark-subtle border-dark-subtle" style="min-height:62px;" data-item-id="${trackId}" data-item-uri="${trackURI}" data-playlist-track-index="${trackIndexInPlaylist}">
     ${
         trackImageURL
-        ? `<img src="${trackImageURL}" class="item-image rounded-start" style="width:60px; max-height:60px;" alt="item-image" data-bs-toggle="modal" data-bs-target="#track-modal">`
+        ? `<img src="${trackImageURL}" class="item-image" style="width:60px; min-width:60px; max-height:60px;" alt="item-image" data-bs-toggle="modal" data-bs-target="#track-modal">`
         : ""
     }
     <div class="w-100 justify-content-between text-truncate" data-bs-toggle="modal" data-bs-target="#track-modal">

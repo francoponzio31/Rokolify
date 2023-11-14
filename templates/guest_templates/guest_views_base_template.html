@@ -18,7 +18,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="{{ url_for('guest_bp.show_allowed_playlists') }}">Sección de invitados</a>
+                        <a class="nav-link active" aria-current="page" href="{{ url_for('guest_bp.show_allowed_playlists') }}">Guest section</a>
                     </li>
                 </ul>
             </div>
@@ -39,7 +39,7 @@
     <section class="queue-modal-section">
         
         <!-- Queue modal trigger -->
-        <button type="button" id="queue-modal-trigger" class="btn btn-primary fixed-bottom m-4 rounded-4" data-bs-toggle="modal" data-bs-target="#queue-modal" style="right: unset;">
+        <button type="button" id="queue-modal-trigger" class="btn btn-primary fixed-bottom m-4 rounded-4" data-bs-toggle="modal" data-bs-target="#queue-modal" style="right: unset; min-width: 48px; min-height: 39px;">
             <img src="{{url_for('static', filename='img/bxs-playlist.svg')}}" alt="queue-btn-icon">
         </button>
         
@@ -48,7 +48,7 @@
             <div class="modal-dialog modal-dialog-scrollable modal-xl">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h3 class="modal-title modal-title fs-5" id="queue-modal-label">Cola de reproducción</h3>
+                        <h3 class="modal-title modal-title fs-5" id="queue-modal-label">Playback queue</h3>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">

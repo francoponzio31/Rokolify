@@ -9,6 +9,7 @@ from itsdangerous import URLSafeSerializer
 import uuid
 from datetime import datetime
 from urllib.parse import urlparse
+import json
 
 
 guest_bp = Blueprint("guest_bp", __name__)
@@ -24,7 +25,7 @@ def guest_gateway(token):
         not validate_access_link_existence(host_email, access_link_data["id"])
         or not validate_access_link_expiration(access_link_data)
     ):
-        return render_template("generic_page.html", title="Link de acceso inválido", content="<h1> El link para acceder a la sección de invitados no es válido. </h1>")
+        return render_template("generic_page.html", title="Invalid access link", content="<h1> The link to access the guest section is not valid. </h1>")
 
     # Se añade el identificador de la cuenta huesped a la sesion:
     session["guest_session"] = {
@@ -64,7 +65,7 @@ def show_allowed_playlists():
         if free_mode:
             return redirect(url_for("guest_bp.guest_search_page"))
         else:
-            return render_template("generic_page.html", title="Sin recursos disponibles", content="<h1> No hay recursos habilitados por el propietario de la cuenta... </h1>")
+            return render_template("generic_page.html", title="No resources available", content="<h1> No resources enabled by the account owner... </h1>")
 
     context = {
         "allowed_playlists": allowed_playlists,
@@ -82,6 +83,7 @@ def show_playlist_items(playlist_id):
 
     #? Validaciones:
     host_email = session["guest_session"]["host_email"]
+        
     host_user_data = get_user_data(host_email)
     spotify_access_token = get_access_token(host_user_data)
 
@@ -99,26 +101,31 @@ def show_playlist_items(playlist_id):
     owner_playlists_access = guest_permissions["owner_playlists_access"]
 
     # Se valida si está habilitado el recurso:
-    if owner_playlists_access:
-        # Se valida que la playlist este entre las habilitadas:
-        profile_succes, profile_response = get_user_profile(spotify_access_token)
-        spotify_user_id = profile_response["id"]
-        if not (
-            check_if_playlist_is_in_user_playlists(spotify_access_token, spotify_user_id, playlist_id) and check_if_playlist_is_allowed_by_user(host_user_data, playlist_id)
-        ):
-            return render_template("generic_page.html", content="<h1> Lo sentimos, la playlist no se encuentra disponible. </h1>")
-    else:
+    if not owner_playlists_access:
         if free_mode:
             return redirect(url_for("guest_bp.guest_search_page"))
         else:
             return render_template("guest_templates/guest_no_resources_allowed.html")
 
     #? Datos de la playlist:
-    success, response = get_playlist(spotify_access_token, playlist_id)
+    cache_key = f"playlist_{playlist_id}"  # Clave única para la caché
+    if current_app.cache.get(cache_key):
+        playlist_success, playlist_response = True, json.loads(current_app.cache.get(cache_key))
+    else:
+        playlist_success, playlist_response = get_playlist(spotify_access_token, playlist_id)
+        current_app.cache.set(cache_key, json.dumps(playlist_response))
 
-    playlist_name = response["name"] if success else []
-    playlist_items = response["tracks"]["items"] if success else []
-    next_tracks_url = response["tracks"]["next"] if success else ""
+    # Se valida que la playlist este entre las habilitadas:
+    profile_succes, profile_response = get_user_profile(spotify_access_token)
+    spotify_user_id = profile_response["id"]
+    if not (
+        check_if_playlist_is_in_user_playlists(spotify_access_token, spotify_user_id, playlist_response) and check_if_playlist_is_allowed_by_user(host_user_data, playlist_id)
+    ):
+        return render_template("generic_page.html", content="<h1> We're sorry, the playlist is not available. </h1>")
+    
+    playlist_name = playlist_response["name"] if playlist_success else []
+    playlist_items = playlist_response["tracks"]["items"] if playlist_success else []
+    next_tracks_url = playlist_response["tracks"]["next"] if playlist_success else ""
 
     context = {
         "playlist_name": playlist_name,
@@ -183,24 +190,24 @@ def add_item_to_owner_queue():
     # Se valida que la petición venga de alguno de los endpoints habilitados:
     allowed_referrer_endpoints = [current_app.config["BASE_URL"] + "/guest/playlist/", current_app.config["BASE_URL"] + "/guest/search_track"]  # Endpoints habilitados
     if not any(request.referrer.startswith(allowed_endpoint) for allowed_endpoint in allowed_referrer_endpoints):
-        return jsonify({"success": False, "message": "Petición inválida", "status_code": 403})
+        return jsonify({"success": False, "message": "Invalid request", "status_code": 403})
 
     # Validaciones sobre la cuenta del anfitrión:
     validation_response = owner_with_linked_spotify_account_validation(host_user_data)
     if validation_response:
-        return jsonify({"success": False, "message": "Se ha producido un error, el usuario anfitrión no tiene una cuenta de Spotify vinculada", "status_code": 403})
+        return jsonify({"success": False, "message": "An error occurred, the host user does not have a linked Spotify account", "status_code": 403})
 
     validation_response = owner_with_guest_access_allowed_validation(host_user_data)
     if validation_response:
-        return jsonify({"success": False, "message": "La intervención de invitados ha sido deshabilitada", "status_code": 403})
+        return jsonify({"success": False, "message": "Guest intervention has been disabled", "status_code": 403})
     
     # Se valida que la canción esta habilitada para agregar:
     if check_if_track_was_recently_added_by_guests(host_user_data, track_uri) is True:
-        return jsonify({"success": False, "message": "La canción ya ha sido agregada a la cola recientemente, prueba agregar otra canción", "status_code": 403})
+        return jsonify({"success": False, "message": "The song has already been added to the queue recently, try adding another song", "status_code": 403})
     
     # Se valida que el invitado pueda agregar una canción:
     if check_if_guest_is_allowed_to_add_to_queue(host_user_data, guest_id) is False:
-        return jsonify({"success": False, "message": f"Debes esperar {host_user_data['guest_settings'].get('cooldown_time_to_add', 0)} segundos antes de agregar otra canción a la cola de reproducción", "status_code": 403})
+        return jsonify({"success": False, "message": f"You must wait {host_user_data['guest_settings'].get('cooldown_time_to_add', 0)} seconds before adding another song to the queue", "status_code": 403})
     
     # Si la petición se hace desde dentro de la vista de una playlist:
     if request.referrer.startswith(current_app.config["BASE_URL"] + "/guest/playlist/"):
@@ -208,7 +215,7 @@ def add_item_to_owner_queue():
         playlist_track_index = request_body["playlist_track_index"]
         track_validation = check_if_track_is_in_playlist(spotify_access_token, track_uri, playlist_id, playlist_track_index)    # Se valida que la canción a agregar pertenezca a la playlist
         if not track_validation:
-            return jsonify({"success": False, "message": "La canción que se intenta agregar no se encuentra en la playlist", "status_code": 403})
+            return jsonify({"success": False, "message": "The song you are trying to add is not in the playlist", "status_code": 403})
     
 
     #? Se agrega la canción a la cola ----------------------------------------------------------------
@@ -217,7 +224,7 @@ def add_item_to_owner_queue():
     success, response = add_item_to_queue(spotify_access_token, track_uri)
     if success:
         add_recently_added_track_by_guest(host_user_data, guest_id, track_uri)  # Se actualiza el registro de canciones agregadas recientemente por invitados
-        return jsonify({"success":True, "message": "Canción agregada a la cola", "status_code": 200})
+        return jsonify({"success":True, "message": "Song added to the queue", "status_code": 200})
 
 
     # Si no se pudo añadir la canción a un dispositivo activo se intenta agregar la canción a alguno de los dispositivos disponibles y volverlo uno activo:
@@ -227,9 +234,9 @@ def add_item_to_owner_queue():
         get_devices_succes, available_devices = get_available_devices(spotify_access_token)
 
         if not get_devices_succes:
-            return jsonify({"success": False, "message": "Error al obtener dispositivos disponibles", "status_code": available_devices["status_code"]})
+            return jsonify({"success": False, "message": "Error retrieving available devices", "status_code": available_devices["status_code"]})
         if not available_devices:
-            return jsonify({"success": False, "message": "No se encontraron dispositivos disponibles", "status_code": 404})
+            return jsonify({"success": False, "message": "No available devices found", "status_code": 404})
 
         # Primer dispositivo disponible:
         target_device_id = available_devices[0]["id"]
@@ -238,24 +245,24 @@ def add_item_to_owner_queue():
             # Se intenta agregar a la cola y saltear a la siguiente para reproducir la canción agregada:
             add_to_queue_succes, _ = add_item_to_queue(spotify_access_token, track_uri, device_id=target_device_id)
             if not add_to_queue_succes:
-                raise Exception("Error al agregar el item a la cola")
+                raise Exception("Error adding the item to the queue")
 
             skip_succes, _ = skip_to_next(spotify_access_token, device_id=target_device_id)
             if not skip_succes:
-                raise Exception("Error al pasar de canción")
+                raise Exception("Error skipping the song")
         
         except:
             # Si no se logra agregar a la cola y saltear se fuerza la cancion al reproductor:
             push_success, push_response = push_to_player(spotify_access_token, "track", track_uri, device_id=target_device_id)
             if not push_success:
-                return jsonify({"success": False, "message": "No se puede reproducir la canción", "status_code": push_response["status_code"]})
+                return jsonify({"success": False, "message": "The song cannot be played", "status_code": push_response["status_code"]})
 
         add_recently_added_track_by_guest(host_user_data, guest_id, track_uri)    # Se actualiza el registro de canciones agregadas recientemente por invitados
-        return jsonify({"success": True, "message": "La canción se reproducirá a continuación", "status_code": 200})
+        return jsonify({"success": True, "message": "The song will play next", "status_code": 200})
                 
 
     # Si nada funciona se devuelve el siguiente mensaje de error:
-    return jsonify({"success": False, "message": "No se ha podido agregar la canción a la cola", "status_code": response["status_code"]})
+    return jsonify({"success": False, "message": "Could not add song to the queue", "status_code": response["status_code"]})
 
 
 @guest_bp.get("/guest/api/queue")
@@ -270,11 +277,11 @@ def get_owner_queue():
     # Validaciones sobre la cuenta del anfitrión:
     validation_response = owner_with_linked_spotify_account_validation(host_user_data)
     if validation_response:
-        return jsonify({"success": False, "message": "Se ha producido un error, el usuario anfitrión no tiene una cuenta de Spotify vinculada", "status_code": 403})
+        return jsonify({"success": False, "message": "An error occurred, the host user does not have a linked Spotify account", "status_code": 403})
 
     validation_response = owner_with_guest_access_allowed_validation(host_user_data)
     if validation_response:
-        return jsonify({"success": False, "message": "Se ha producido un error, el usuario anfitrión ha deshabilitado la intervención de invitados", "status_code": 403})
+        return jsonify({"success": False, "message": "An error occurred, the host user has disabled guest intervention", "status_code": 403})
 
     success, response = get_user_queue(spotify_access_token)
 
@@ -283,7 +290,7 @@ def get_owner_queue():
         return jsonify(response)
     
     else:
-        return jsonify({"success": False, "message":"Error al obtener la cola de reproducción", "status_code": response["status_code"]})
+        return jsonify({"success": False, "message": "Error retrieving the playback queue", "status_code": response["status_code"]})
 
 
 @guest_bp.get("/guest/api/track/<string:track_id>")
@@ -298,15 +305,15 @@ def get_track_data(track_id):
     # Validaciones sobre la cuenta del anfitrión:
     validation_response = owner_with_linked_spotify_account_validation(host_user_data)
     if validation_response:
-        return jsonify({"success": False, "message": "Se ha producido un error, el usuario anfitrión no tiene una cuenta de Spotify vinculada", "status_code": 403})
+        return jsonify({"success": False, "message": "An error occurred, the host user does not have a linked Spotify account", "status_code": 403})
 
     validation_response = owner_with_guest_access_allowed_validation(host_user_data)
     if validation_response:
-        return jsonify({"success": False, "message": "Se ha producido un error, el usuario anfitrión ha deshabilitado la intervención de invitados", "status_code": 403})
+        return jsonify({"success": False, "message": "An error occurred, the host user has disabled guest intervention", "status_code": 403})
 
     track_success, track_response = get_track(spotify_access_token, track_id)
     if not track_success:
-        return jsonify({"success": False, "message":"Error al obtener los datos de la canción", "status_code": track_response["status_code"]})
+        return jsonify({"success": False, "message": "Error retrieving song data", "status_code": track_response["status_code"]})
     
     #? Parseo de los datos de la canción:
     track_data = {}
@@ -358,11 +365,11 @@ def search_in_catalog(search):
     # Validaciones sobre la cuenta del anfitrión:
     validation_response = owner_with_linked_spotify_account_validation(host_user_data)
     if validation_response:
-        return jsonify({"success": False, "message": "Se ha producido un error, el usuario anfitrión no tiene una cuenta de Spotify vinculada", "status_code": 403})
+        return jsonify({"success": False, "message": "An error occurred, the host user does not have a linked Spotify account", "status_code": 403})
 
     validation_response = owner_with_guest_access_allowed_validation(host_user_data)
     if validation_response:
-        return jsonify({"success": False, "message": "Se ha producido un error, el usuario anfitrión ha deshabilitado la intervención de invitados", "status_code": 403})
+        return jsonify({"success": False, "message": "An error occurred, the host user has disabled guest intervention", "status_code": 403})
 
     success, response = search_tracks_in_catalog(spotify_access_token, search)
 
@@ -370,7 +377,7 @@ def search_in_catalog(search):
         response.update({"success": True, "status_code": 200})
         return jsonify(response)
     else:
-        return jsonify({"success": False, "message":"Error al realizar la busqueda", "status_code": response["status_code"]})
+        return jsonify({"success": False, "message": "Error performing the search", "status_code": response["status_code"]})
 
 
 @guest_bp.get("/guest/api/get_playlist_items/<string:playlist_id>/<int:offset>/<int:limit>")
@@ -385,11 +392,11 @@ def get_more_playlist_items(playlist_id, offset, limit):
     # Validaciones sobre la cuenta del anfitrión:
     validation_response = owner_with_linked_spotify_account_validation(host_user_data)
     if validation_response:
-        return jsonify({"success": False, "message": "Se ha producido un error, el usuario anfitrión no tiene una cuenta de Spotify vinculada", "status_code": 403})
+        return jsonify({"success": False, "message": "An error occurred, the host user does not have a linked Spotify account", "status_code": 403})
 
     validation_response = owner_with_guest_access_allowed_validation(host_user_data)
     if validation_response:
-        return jsonify({"success": False, "message": "Se ha producido un error, el usuario anfitrión ha deshabilitado la intervención de invitados", "status_code": 403})
+        return jsonify({"success": False, "message": "An error occurred, the host user has disabled guest intervention", "status_code": 403})
 
     success, response = get_playlist_items(spotify_access_token, playlist_id, offset=offset, limit=limit)
 
@@ -397,7 +404,7 @@ def get_more_playlist_items(playlist_id, offset, limit):
         response.update({"success": True, "status_code": 200})
         return jsonify(response)
     else:
-        return jsonify({"success": False, "message":"Error al obtener las canciones", "status_code": response["status_code"]})
+        return jsonify({"success": False, "message": "Error retrieving the songs", "status_code": response["status_code"]})
 
 
 @guest_bp.get("/guest/api/get_playlists/<int:offset>/<int:limit>")
@@ -410,19 +417,17 @@ def get_more_playlists(offset, limit):
     # Validaciones sobre la cuenta del anfitrión:
     validation_response = owner_with_linked_spotify_account_validation(host_user_data)
     if validation_response:
-        return jsonify({"success": False, "message": "Se ha producido un error, el usuario anfitrión no tiene una cuenta de Spotify vinculada", "status_code": 403})
+        return jsonify({"success": False, "message": "An error occurred, the host user does not have a linked Spotify account", "status_code": 403})
 
     validation_response = owner_with_guest_access_allowed_validation(host_user_data)
     if validation_response:
-        return jsonify({"success": False, "message": "Se ha producido un error, el usuario anfitrión ha deshabilitado la intervención de invitados", "status_code": 403})
+        return jsonify({"success": False, "message": "An error occurred, the host user has disabled guest intervention", "status_code": 403})
 
     success, allowed_playlists, next_playlists_url = _get_user_allowed_playlists(host_user_data, offset=offset, limit=limit)
-
     if success:
         return jsonify({"success": True, "status_code": 200, "playlists": allowed_playlists, "next": next_playlists_url})
     else:
-        return jsonify({"success": False, "message":"Error al obtener las playlists"})
-
+        return jsonify({"success": False, "message": "Error retrieving the playlists"})
 
 
 def _get_user_allowed_playlists(user_data, offset=0, limit=20):

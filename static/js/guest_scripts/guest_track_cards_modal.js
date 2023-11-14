@@ -35,7 +35,7 @@ function setTrackCardsEventListeners(){
                         // console.log(data)
                         trackModalTitlePlaceholder.classList.add("d-none");
                         trackModalLoadSpinner.classList.add("d-none");
-                        trackModalTitle.innerText = data.name;
+                        trackModalTitle.innerHTML = getSpotifyLogo();
                         trackModalTitle.classList.remove("d-none");
                         trackModalInfoContainer.innerHTML = "";
 
@@ -61,16 +61,24 @@ function setTrackCardsEventListeners(){
 }
 
 
+function getSpotifyLogo(){
+    return `
+        <a href='https://open.spotify.com' target='_blank'>
+            <img src='/static/img/spotify_logo.png' style='height: 30px'>
+        </a>
+    `;
+}
+
 function getAlbumInfoHtml(trackData){
 
     html = `
         <section class="album-info container">
-            <h3 class="track-card-section-title fs-5">Álbum</h3>
+            <h3 class="track-card-section-title fs-5">Album</h3>
             <div class="d-flex align-items-center">
-                <img src="${trackData.album_img_url}" class="img-thumbnail-track track-image object-fit-cover me-3 rounded" style="width: 60px; height: 60px;" alt="track-image">
+                <img src="${trackData.album_img_url}" class="img-thumbnail-track track-image object-fit-cover me-3" style="width: 60px; height: 60px;" alt="track-image">
                 <div>
                     <a href="${trackData.album_spotify_url}" target="_blank" class="track-card-link">${trackData.album_name}</a>
-                    <p> <span class="fw-bold">Lanzamiento: </span>${trackData.album_release_date}</p>
+                    <p> <span class="fw-bold">Release: </span>${trackData.album_release_date}</p>
                 </div>
             </div>
         </section>`
@@ -85,7 +93,7 @@ function getArtistsInfoHtml(trackData){
         <div class="col d-flex align-items-center text-start">
             ${
                 artistData.img_url
-                ? `<img src='${artistData.img_url}' class='img-thumbnail-track track-image object-fit-cover me-3 rounded-circle' style='width: 55px; height: 55px;' alt='track-image'>`
+                ? `<img src='${artistData.img_url}' class='img-thumbnail-track track-image object-fit-cover me-3' style='width: 55px; height: 55px;' alt='track-image'>`
                 : `
                 <svg xmlns='http://www.w3.org/2000/svg' width='55' height='55' fill='currentColor' class='bi bi-person-circle me-3' viewBox='0 0 16 16'>
                         <path d='M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z'/>
@@ -101,7 +109,7 @@ function getArtistsInfoHtml(trackData){
     
     html = `
         <section class="artists-info container">
-            <h3 class="track-card-section-title fs-5">Artistas</h3>
+            <h3 class="track-card-section-title fs-5">Artists</h3>
 
             <div class="row row-cols-auto row-cols-lg-3 gap-2">
                 ${trackData.artists.map(artistData => artistHtml(artistData)).join("")}
@@ -116,10 +124,10 @@ function getTrackInfoHtml(trackData){
 
     html = `
         <section class="track-info container">
-            <h3 class="track-card-section-title fs-5">Canción</h3>
+            <h3 class="track-card-section-title fs-5">Song</h3>
             <div class="d-flex flex-column align-items-start gap-2">
                 <a href="${trackData.spotify_url}" target="_blank" class="track-card-link">${trackData.name}</a>
-                <div> <span class="fw-bold">Duración: </span>${trackData.duration}</div>
+                <div> <span class="fw-bold">Duration: </span>${trackData.duration}</div>
                 ${
                     trackData.preview_url
                     ? `
@@ -130,14 +138,14 @@ function getTrackInfoHtml(trackData){
                         
                         <div class="d-flex align-items-start">
                             <button id="track-sample-play-btn" class="btn btn-outline-secondary rounded-4 d-flex align-items-center mt-1">
-                                <span class="fw-bold me-2"> Vista previa </span>
+                                <span class="fw-bold me-2"> Song preview </span>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
                                     <path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/>
                                 </svg>
                             </button>
 
                             <button id="track-sample-pause-btn" class="d-none btn btn-outline-secondary rounded-4 d-flex align-items-center mt-1">
-                                <span class="fw-bold me-2"> Vista previa </span>
+                                <span class="fw-bold me-2"> Song preview </span>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pause-fill" viewBox="0 0 16 16">
                                     <path d="M5.5 3.5A1.5 1.5 0 0 1 7 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5zm5 0A1.5 1.5 0 0 1 12 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5z"/>
                                 </svg>

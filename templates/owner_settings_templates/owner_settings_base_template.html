@@ -20,23 +20,23 @@
                 <ul class="navbar-nav">
                     <li class="nav-item">
                         {% if request.path == "/owner/welcome" %}
-                            <a class="nav-link active" aria-current="page" href="#">Inicio</a>
+                            <a class="nav-link active" aria-current="page" href="#">Home</a>
                         {% else %}
-                            <a class="nav-link" aria-current="page" href="{{ url_for('owner_bp.welcome') }}">Inicio</a>
+                            <a class="nav-link" aria-current="page" href="{{ url_for('owner_bp.welcome') }}">Home</a>
                         {% endif %}
                     </li>
                     <li class="nav-item">
                         {% if request.path == "/owner/account_settings" %}
-                            <a class="nav-link active" aria-current="page" href="#">Mi cuenta</a>
+                            <a class="nav-link active" aria-current="page" href="#">My account</a>
                         {% else %}
-                            <a class="nav-link" aria-current="page" href="{{ url_for('owner_bp.account_settings') }}">Mi cuenta</a>
+                            <a class="nav-link" aria-current="page" href="{{ url_for('owner_bp.account_settings') }}">My account</a>
                         {% endif %}
                     </li>
                     <li class="nav-item">
                         {% if request.path == "/owner/guest_settings" %}
-                            <a class="nav-link active" aria-current="page" href="#">Configuración para invitados</a>
+                            <a class="nav-link active" aria-current="page" href="#">Guest settings</a>
                         {% else %}
-                            <a class="nav-link" aria-current="page" href="{{ url_for('owner_bp.owner_settings_for_guests') }}">Configuración para invitados</a>
+                            <a class="nav-link" aria-current="page" href="{{ url_for('owner_bp.owner_settings_for_guests') }}">Guest settings</a>
                         {% endif %}
                     </li>
                 </ul>

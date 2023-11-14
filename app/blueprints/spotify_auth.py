@@ -69,7 +69,7 @@ def spotify_auth_callback():
         update_user(user_email, {"spotify_access_token_data":spotify_access_token_data})
 
     else:
-        return jsonify({"success": False, "message": "Error al enlazar con cuenta de Spotify", "status_code": response.status_code}), response.status_code
+        return jsonify({"success": False, "message": "Error linking with Spotify account", "status_code": response.status_code}), response.status_code
 
     # ----------------------------------------------
 

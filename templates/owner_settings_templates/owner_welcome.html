@@ -6,41 +6,42 @@
 
 {% block title %}
     {{ super() }}
-    Inicio
+    Home
 {% endblock %}
 
 {% block main_content %}
 
     <!-- Bienvenida -->
     <section class="p-4 border rounded-3" style="margin-top: 3.5rem;">                
-        <h2 class="fs-1 mb-3">¡Te damos la bienvenida, {{ rokolify_profile["given_name"].capitalize() }}!</h2>
+        <h2 class="fs-1 mb-3">Welcome, {{ rokolify_profile["given_name"].capitalize() }}!</h2>
 
         <div style="font-size: 1.1rem;">
             <p style="text-indent: .3em;">
-            Con Rokolify crea una experiencia musical compartida usando Spotify. Habilita tu reproductor de Spotify para que tus amigos agreguen la música que quieran escuchar a la cola de reproducción.
+                With Rokolify, create a shared music experience using Spotify. Enable your Spotify player so your friends can add the music they want to hear to the playback queue.
             </p>
-                
-            <p class="mb-1">¿Cómo funciona?</p>
+        
+            <p class="mb-1">How does it work?</p>
             <ul>
-                <li><b>Configura tu cuenta:</b> Primero, enlaza tu cuenta de Spotify. Luego, puedes elegir qué canciones pueden agregar tus invitados, ya sea seleccionándolas de tus playlists o buscando cualquier canción dentro del catálogo de Spotify.</li>
-                <li><b>Invita a tus amigos:</b> Comparte el enlace de acceso para invitados con tus amigos para que puedan unirse a la diversión.</li>
-                <li><b>Agregar canciones:</b> Cada invitado puede agregar canciones a la cola de reproducción de Spotify.</li>
-                <li><b>Disfruta juntos:</b> Escucha las canciones que todos eligen, creando una experiencia musical única.</li>
+                <li><b>Set up your account:</b> First, link your Spotify account. Then, you can choose which songs your guests can add, either by selecting them from your playlists or by searching for any song in the Spotify catalog.</li>
+                <li><b>Invite your friends:</b> Share the guest access link with your friends so they can join the fun.</li>
+                <li><b>Add songs:</b> Each guest can add songs to your Spotify playback queue.</li>
+                <li><b>Enjoy together:</b> Listen to the songs everyone chooses, creating a unique musical experience.</li>
             </ul>
-
-            <p class="mb-1">Características clave:</p>
+        
+            <p class="mb-1">Key features:</p>
             <ul>
-                <li><b>Fácil de usar:</b> Navega, busca y agrega canciones de Spotify sin complicaciones.</li>
-                <li><b>Colaborativo:</b> Deja que tus amigos influyan en la música y mantén la fiesta en marcha.</li>
-                <li><b>Integración con Spotify:</b> Todas las canciones se reproducen directamente desde tu cuenta de Spotify, y tienes su catálogo a disposición.</li>
+                <li><b>Easy to use:</b> Browse, search, and add Spotify songs without hassle.</li>
+                <li><b>Collaborative:</b> Let your friends influence the music and keep the party going.</li>
+                <li><b>Integration with Spotify:</b> All songs are played directly from your Spotify account, and you have access to its catalog.</li>
+                <li><b>Control access to your account:</b> Once you decide to end the collaborative experience, you can delete the access link you generated so that guests can no longer add songs to your player.</li>
             </ul>
-
-            <p class="mb-4">¡Descubre Rokolify y añade un toque especial a la musicalización de tus eventos!</p>
-
+        
+            <p class="mb-4">Discover Rokolify and add a special touch to the music at your events!</p>
+        
             <a class="btn btn-primary" href="{{ url_for('owner_bp.account_settings') }}" role="button">
-                Configura tu cuenta
+                Set up your account
             </a>
-        </div>
+        </div>        
     </section>
 
 {% endblock %}

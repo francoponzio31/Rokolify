@@ -183,15 +183,16 @@ def check_if_track_is_in_playlist(spotify_access_token, track_uri, playlist_id, 
     return track_is_in_playlist
 
 
-def check_if_playlist_is_in_user_playlists(spotify_access_token, user_id, playlist_id):
+def check_if_playlist_is_in_user_playlists(spotify_access_token, user_id, playlist_data):
 
     """
         Valida que la playlist cuyo id se pasa por parametro este entre las playlists del usuario dado, esto es, que el usuario siga o sea propietario de la playlist.
     """
 
+    playlist_id = playlist_data["id"]
+
     # Se chequea si el usuario es propietario:
-    owning_success, owning_response = get_playlist(spotify_access_token, playlist_id, fields="owner.id")
-    if owning_success and owning_response["owner"]["id"] == user_id:
+    if playlist_data["owner"]["id"] == user_id:
         return True
 
     # Se chequea si el usuario sigue a la playlist:

@@ -28,7 +28,11 @@ searchBtn.addEventListener("click", (event)=>{
 
             const tracks = data.items;
 
-            searchResultContainer.innerHTML = "";
+            searchResultContainer.innerHTML = `
+            <a href='https://open.spotify.com' target='_blank' class="align-self-start">
+                <img src='/static/img/spotify_logo.png' class="mb-1" style='height: 30px'>
+            </a>
+            `;
             tracks.forEach(track => {
                 searchResultContainer.insertAdjacentHTML("beforeend", generateTrackItem(
                     track.id,
@@ -57,10 +61,10 @@ searchBtn.addEventListener("click", (event)=>{
 function generateTrackItem(trackId, trackURI, trackName, artist, trackImageURL){
 
     const item = `
-    <div class="track-card  card d-flex flex-row align-items-center pe-2 gap-3 bg-dark-subtle border-dark-subtle" data-item-id="${trackId}" data-item-uri="${trackURI}">
+    <div class="track-card border rounded-end d-flex flex-row align-items-center pe-2 gap-3 bg-dark-subtle border-dark-subtle" style="min-height:62px;" data-item-id="${trackId}" data-item-uri="${trackURI}">
         ${
             trackImageURL
-            ? `<img src="${trackImageURL}" class="item-image rounded-start" style="width:60px; max-height:60px;" alt="item-image" data-bs-toggle="modal" data-bs-target="#track-modal">`
+            ? `<img src="${trackImageURL}" class="item-image" style="width:60px; min-width:60px; max-height:60px;" alt="item-image" data-bs-toggle="modal" data-bs-target="#track-modal">`
             : ""
         }   
         <div class="w-100 justify-content-between text-truncate" data-bs-toggle="modal" data-bs-target="#track-modal">

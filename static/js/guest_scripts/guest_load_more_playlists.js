@@ -6,9 +6,9 @@ const loadSpinner = document.getElementById("load-more-playlists-spinner");
 const tackItemHtml = (playlistName, playlistImageURL, playlistId) => {
     return `
     <div class="col">
-        <div class="playlist-card card d-flex flex-row align-items-center pe-2 gap-3 bg-dark-subtle border-dark-subtle" style="--bs-bg-opacity: .9; cursor: pointer;" data-playlist-id="${playlistId}">
+        <div class="playlist-card border rounded-end d-flex flex-row align-items-center pe-2 gap-3 bg-dark-subtle border-dark-subtle" style="--bs-bg-opacity: .9; cursor: pointer;" data-playlist-id="${playlistId}">
             <div>
-                <img src="${playlistImageURL}" class="item-image rounded-start object-fit-cover" style="max-width: 80px; max-height:80px; width:80px; height:auto;" alt="item-image">
+                <img src="${playlistImageURL}" class="item-image object-fit-cover" style="max-width: 80px; max-height:80px; width:80px; height:auto;" alt="item-image">
             </div>
             <div class="w-100 text-truncate">
                 <h5 class="card-title fs-5 fw-bold text-truncate">${playlistName}</h5>

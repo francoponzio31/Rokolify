@@ -28,13 +28,13 @@ addAccessLinkBtn.addEventListener("click", async () => {
 
     // Validaciones
     if (!description){
-        accessLinkValidationMessage.innerText = "La descripción es requerida"
+        accessLinkValidationMessage.innerText = "Description is required"
         accessLinkValidationMessage.classList.remove("d-none")
         return
     }
 
     if (expirationDatetime && new Date(expirationDatetime) < new Date()){
-        accessLinkValidationMessage.innerText = "La fecha de vencimiento debe ser posterior a la actual"
+        accessLinkValidationMessage.innerText = "The expiration date must be after the current date"
         accessLinkValidationMessage.classList.remove("d-none")
         return
     }
@@ -93,10 +93,10 @@ function renderAccessLinks(accessLinks){
             `<tr>
                 <td class="align-middle">${link.description}</td>
                 <td class="align-middle">
-                    <a id="guest-url-link" href="/guest/gateway/${link.token}" target="_blank" class="text-decoration-none text-primary-emphasis">Acceder</a>
+                    <a id="guest-url-link" href="/guest/gateway/${link.token}" target="_blank" class="text-decoration-none text-primary-emphasis">Enter</a>
                 </td>
                 <td class="align-middle">${link.created_on}</td>
-                <td class="align-middle">${link.expiration_datetime || "Nunca"}</td>
+                <td class="align-middle">${link.expiration_datetime || "Never"}</td>
                 <td class="grid gap-3 col-1 col-md-3">
                     <button type="button" class="access-link-copy-url-btn btn btn-sm btn-primary rounded-3" style="padding: .18rem .32rem" data-access-link-url="${accessLinkUrl}">
                         <img src="/static/img/bxs-copy.svg">
@@ -140,7 +140,7 @@ function renderAccessLinks(accessLinks){
 
                     const copyUrlToast = document.getElementById("copy-url-toast");
                     const toastBody = copyUrlToast.querySelector(".toast-body");
-                    toastBody.innerText = "URL copiada en el portapapeles";
+                    toastBody.innerText = "Link URL copied to clipboard";
                     
                     const toast = new bootstrap.Toast(copyUrlToast);
                     toast.show();

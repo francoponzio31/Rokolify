@@ -16,8 +16,9 @@ class Config(object):
     GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
     SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
     SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
-    SPOTIFY_SCOPE = "user-modify-playback-state user-read-playback-state user-read-currently-playing playlist-read-private user-read-email user-read-recently-played"
-
+    SPOTIFY_SCOPE = "user-modify-playback-state user-read-playback-state user-read-currently-playing playlist-read-private user-read-email"
+    CACHE_TYPE = "SimpleCache"
+    CACHE_DEFAULT_TIMEOUT = 300  # Tiempo de expiración predeterminado en segundos
 
 class DevelopmentConfig(Config):
     BASE_URL = "http://localhost:8888"

@@ -98,7 +98,11 @@ paginationBtns.forEach((btn) => {
             })
             .then(data => {
 
-                playlistItemsContainer.innerHTML = "";
+                playlistItemsContainer.innerHTML = `
+                <a href='https://open.spotify.com' target='_blank'>
+                    <img src='/static/img/spotify_logo.png' class="mb-2 ms-2 align-self-start" style='height: 30px'>
+                </a>
+                `;
                 
                 data.playlists.items.forEach(playlist => {
                     playlistItemsContainer.insertAdjacentHTML(
@@ -136,7 +140,7 @@ paginationBtns.forEach((btn) => {
 function playlistSettingCardHtml(playlistUri, playlistId, playlistName, playlistImageUrl){
      
     const html = `
-        <div class="playlist-setting-card card mx-1" data-playlist-uri="${playlistUri}">
+        <div class="playlist-setting-card card mx-1" style="min-height: 55px;" data-playlist-uri="${playlistUri}">
             <div class="card-header d-flex align-items-center">
                 <img src="${playlistImageUrl}" class="img-thumbnail img-thumbnail-playlist playlist-image object-fit-cover me-3" style="width: 55px; height: 55px;" alt="playlist-image">
                 <h2 class="fs-4 card-title my-0">${playlistName}</h2>
@@ -144,9 +148,9 @@ function playlistSettingCardHtml(playlistUri, playlistId, playlistName, playlist
             <div class="card-body d-flex align-items-center justify-content-around">
                 <div class="form-check form-switch">
                     <input class="form-check-input allow-playlist-switch" type="checkbox" role="button" data-playlist-id="${playlistId}">
-                    <label class="form-check-label" for="${playlistId}">Habilitar</label>
+                    <label class="form-check-label" for="${playlistId}">Enable</label>
                 </div>
-                <button type="button" data-playlist-id="${playlistId}" class="playlist-allow-conditions-btn btn btn-sm btn-secondary" data-bs-target="#playlist-conditions-settings" data-bs-toggle="modal">Condiciones</button>
+                <button type="button" data-playlist-id="${playlistId}" class="playlist-allow-conditions-btn btn btn-sm btn-secondary" data-bs-target="#playlist-conditions-settings" data-bs-toggle="modal">Conditions</button>
             </div>
         </div>
     `;
@@ -269,14 +273,14 @@ function renderPlaylistSettings(playlistId, playlistAllowedConditions){
         emptyGridMessage.classList.add("d-none")
 
         const dayNameMap = {
-            "-1": "Todos",
-            "0": "Lunes",
-            "1": "Martes",
-            "2": "Miércoles",
-            "3": "Jueves",
-            "4": "Viernes",
-            "5": "Sábado",
-            "6": "Domingo",
+            "-1": "All",
+            "0": "Monday",
+            "1": "Tuesday",
+            "2": "Wednesday",
+            "3": "Thursday",
+            "4": "Friday",
+            "5": "Saturday",
+            "6": "Sunday"
         }
 
         playlistAllowedConditions.forEach((condition) => {

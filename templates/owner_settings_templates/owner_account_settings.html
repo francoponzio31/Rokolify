@@ -6,7 +6,7 @@
 
 {% block title %}
     {{ super() }}
-    Configuración de cuenta
+    Account settings
 {% endblock %}
 
 {% block messages %}
@@ -14,7 +14,7 @@
 {% endblock %}
 
 {% block main_title %}
-    Mi cuenta
+    My account
 {% endblock %}
 
 
@@ -31,11 +31,11 @@
                 <img src="{{ rokolify_profile['profile_picture'] }}" class="align-self-start rounded-circle" style="width:65px;" alt="user-image">      
                 <div class="w-100 justify-content-between">
                     <p class="mb-1"><span class="fw-bold mb-0">Email: </span>{{rokolify_profile["email"]}} </p>
-                    <p class="mb-1"><span class="fw-bold mb-0">Nombre de usuario: </span>{{rokolify_profile["name"]}} </p>
+                    <p class="mb-1"><span class="fw-bold mb-0">Username: </span>{{rokolify_profile["name"]}} </p>
 
                     <a class="btn btn-danger mt-3" href="{{ url_for('logout') }}" role="button">
                         <img src="{{url_for('static', filename='img/bx-log-out.svg')}}" alt="logout-icon">
-                        Cerrar sesión
+                        Log out
                     </a>
                 </div>
             </div>
@@ -49,12 +49,12 @@
             
             <section class="p-4 border rounded-3">                
         
-                <h2 class="fs-4">Cuenta de Spotify vinculada</h2>
+                <h2 class="fs-4">Linked Spotify account</h2>
                 
                 <div class="w-100 justify-content-between my-3">
                     <h5 class="card-title fs-5 fw-semibold mb-0">
-                        <span class="me-3">No hay ninguna cuenta de Spotify vinculada</span>
-                        <a tabindex="0" class="btn btn-secondary rounded-pill py-0 px-1" data-bs-container="body" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="En caso de tener una sesión de Spotify vinculada en el navegador, tu cuenta de Rokolify se vinculará automaticamente a esa sesión de Spotify. Para seleccionar otra cuenta de Spotify primero debes cerrar sesión desde la pagina web de Spotify.">
+                        <span class="me-3">No Spotify account linked</span>
+                        <a tabindex="0" class="btn btn-secondary rounded-pill py-0 px-1" data-bs-container="body" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="If you have a linked Spotify session in your browser, your Rokolify account will be automatically linked to that Spotify session. To select another Spotify account, you must first log out from the Spotify website.">
                             <img src="{{url_for('static', filename='img/question-lg.svg')}}">
                         </a>
                     </h5>
@@ -62,7 +62,7 @@
                 
                 <a class="btn btn-primary" href="{{ url_for('spotify_auth.spotify_login') }}" role="button">
                     <img src="{{url_for('static', filename='img/bxl-spotify.svg')}}" alt="spotify-icon">
-                    Vincula tu cuenta de Spotify
+                    Link your Spotify account
                 </a>
             </section>
 
@@ -71,7 +71,7 @@
             <!-- Datos cuenta de Spotify -->
             
             <section class="p-4 border rounded-3">                
-                <h2 class="fs-4">Cuenta de Spotify vinculada</h2>
+                <h2 class="fs-4">Spotify account linked</h2>
                 
                     <div class="d-flex flex-row align-items-center mt-3 pe-2 gap-3">
                         
@@ -82,12 +82,12 @@
                         {% endif %}
                         <div class="w-100 justify-content-between">
                             <p class="mb-1"><span class="fw-bold mb-0">Email: </span>{{spotify_profile["email"]}} </p>
-                            <p class="mb-1"><span class="fw-bold mb-0">Nombre de usuario: </span>{{spotify_profile["display_name"]}} </p>
-                            <p class="mb-1"><span class="fw-bold mb-0">ID de usuario: </span>{{spotify_profile["id"]}} </p>
-                            <p class="mb-1"><span class="fw-bold mb-0">Perfil de Spotify: </span> <a href="https://open.spotify.com/user/{{spotify_profile['id']}}" target="_blank" class="text-decoration-none">{{spotify_profile["display_name"]}}</a></p>
+                            <p class="mb-1"><span class="fw-bold mb-0">Username: </span>{{spotify_profile["display_name"]}} </p>
+                            <p class="mb-1"><span class="fw-bold mb-0">User ID: </span>{{spotify_profile["id"]}} </p>
+                            <p class="mb-1"><span class="fw-bold mb-0">Spotify profile: </span> <a href="https://open.spotify.com/user/{{spotify_profile['id']}}" target="_blank" class="text-decoration-none">{{spotify_profile["display_name"]}}</a></p>
                             <button id="unlink-spotify-account-btn" class="btn btn-danger mt-3" type="button">
                                 <img src="{{url_for('static', filename='img/bxl-spotify.svg')}}" alt="spotify-icon">
-                                Desvincula tu cuenta de Spotify
+                                Unlink your Spotify account
                             </button>
                         </div>
                         
@@ -99,7 +99,7 @@
             <!-- Reproductor activo -->
             
             <section class="p-4 border rounded-3">                
-                <h2 class="fs-4">Reproductor activo</h2>
+                <h2 class="fs-4">Active player</h2>
                 
                     {% if active_device %}
 
@@ -121,7 +121,7 @@
                     {% else %}
                         <div class="d-flex flex-row align-items-center mb-2 pe-2 gap-3">
                             <div class="w-100 justify-content-between">
-                                <h5 class="card-title fs-5 fw-semibold mb-0">No hay ningún reproductor activo</h5>
+                                <h5 class="card-title fs-5 fw-semibold mb-0">There is no active player</h5>
                             </div>
                         </div>
                     {% endif %}
@@ -131,7 +131,7 @@
             <!-- Reproductores disponibles -->
             
             <section class="p-4 border rounded-3">                
-                <h2 class="fs-4">Reproductores disponibles</h2>
+                <h2 class="fs-4">Available players</h2>
                 
                     {% if available_devices %}
 
@@ -160,7 +160,7 @@
                     {% else %}
                         <div class="d-flex flex-row align-items-center mb-2 pe-2 gap-3">
                             <div class="w-100 justify-content-between">
-                                <h5 class="card-title fs-5 fw-semibold mb-0">No hay reproductores disponibles</h5>
+                                <h5 class="card-title fs-5 fw-semibold mb-0">No players available</h5>
                             </div>
                         </div>
                     {% endif %}

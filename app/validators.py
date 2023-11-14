@@ -18,7 +18,7 @@ def guest_session_required(function):
     @wraps(function)
     def wrapper(*args, **kwargs):
         if not session.get("guest_session"):
-            return render_template("generic_page.html", title="Sesión expirada", content="<h1> Sesión de invitado expirada. </h1>")
+            return render_template("generic_page.html", title="Session expired", content="<h1> Guest session expired. </h1>")
         else:
             return function(*args, **kwargs)
     return wrapper
@@ -31,8 +31,8 @@ def owner_with_linked_spotify_account_validation(owner_user_data):
         return make_response(render_template(
                 "generic_page.html", 
                 content="""
-                    <h1> Acceso no permitido </h1>
-                    <p class="mt-3 text-center"> El acceso a esta sección no está permitido. El usuario anfitrión debe tener una cuanta de Spotify vinculada para acceder a este recurso.</p>
+                    <h1> Access not allowed </h1>
+                    <p class="mt-3 text-center"> Access to this section is not allowed. The host user must have a linked Spotify account to access this resource. </p>
                 """
             )
         )
@@ -44,8 +44,8 @@ def owner_with_guest_access_allowed_validation(owner_user_data):
         return make_response(render_template(
                 "generic_page.html", 
                 content="""
-                    <h1> Acceso no permitido </h1>
-                    <p class="mt-3 text-center"> El acceso a la sección de invitados está deshabilitado. El usuario anfitrión ha desactivado la intervención de invitados.</p>
+                    <h1> Access not allowed </h1>
+                    <p class="mt-3 text-center"> Access to the guest section is disabled. The host user has deactivated guest intervention. </p>
                 """
             )
         )

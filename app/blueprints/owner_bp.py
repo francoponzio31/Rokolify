@@ -120,7 +120,7 @@ def update_guest_permissions():
     request_body = request.json
 
     if not request_body.get("permission"):
-        return jsonify({"success": False, "message": "Permiso iválido", "status_code": 403})
+        return jsonify({"success": False, "message": "Invalid permission", "status_code": 403})
 
     if request_body["permission"] == "guest-access" and isinstance(request_body.get("value"), bool):
         update_guest_permission(owner_email, "allow_guest_access", request_body["value"])
@@ -138,9 +138,9 @@ def update_guest_permissions():
         update_user(owner_email, {"guest_settings.cooldown_time_to_add": request_body["value"]})
 
     else:
-        return jsonify({"success": False, "message": "Acción rechazada", "status_code": 403})
+        return jsonify({"success": False, "message": "Action rejected", "status_code": 403})
 
-    return jsonify({"message": "La operación se realizó correctamente"})
+    return jsonify({"message": "The operation was successful"})
 
 
 @owner_bp.get("/owner/api/guest_access_links")
@@ -165,13 +165,13 @@ def add_access_link():
 
     request_body = request.json
     if not request_body or (type(request_body) != dict) or "new_access_link" not in request_body:
-        return jsonify({"success": False, "message": "Acción rechazada", "status_code": 403}), 403
+        return jsonify({"success": False, "message": "Action rejected", "status_code": 403}), 403
 
     owner_email = session["host_session"]["user_email"]
     received_link_data = request_body["new_access_link"]
 
     if not received_link_data["description"].strip():
-        return jsonify({"success": False, "message": "Acción rechazada", "status_code": 403}), 403
+        return jsonify({"success": False, "message": "Action rejected", "status_code": 403}), 403
 
     try:
         # Obtener la zona horaria del diccionario
@@ -197,7 +197,7 @@ def add_access_link():
     
     add_guest_access_link(owner_email, new_link)
 
-    return jsonify({"message": "La operación se realizó correctamente"})
+    return jsonify({"message": "The operation was successful"})
 
 
 @owner_bp.delete("/owner/api/guest_access_links")
@@ -206,13 +206,13 @@ def delete_access_link():
 
     request_body = request.json
     if not request_body or (type(request_body) != dict) or "access_link_id" not in request_body:
-        return jsonify({"success": False, "message": "Acción rechazada", "status_code": 403}), 403
+        return jsonify({"success": False, "message": "Action rejected", "status_code": 403}), 403
 
     owner_email = session["host_session"]["user_email"]
     access_link_id = request_body["access_link_id"]
     delete_guest_access_link(owner_email, access_link_id)
 
-    return jsonify({"message": "La operación se realizó correctamente"})
+    return jsonify({"message": "The operation was successful"})
 
 
 @owner_bp.get("/owner/api/playlists_settings")
@@ -232,13 +232,13 @@ def set_allow_playlist_value(playlist_id):
 
     request_body = request.json
     if not request_body or (type(request_body) != dict) or "allow_value" not in request_body or not isinstance(request_body["allow_value"], bool):
-        return jsonify({"success": False, "message": "Acción rechazada", "status_code": 403}), 403
+        return jsonify({"success": False, "message": "Action rejected", "status_code": 403}), 403
     
     owner_email = session["host_session"]["user_email"]
     allow_value = request_body["allow_value"]
     set_allow_playlist_settings(owner_email, playlist_id, allow_value)
 
-    return jsonify({"message": "La operación se realizó correctamente"})
+    return jsonify({"message": "The operation was successful"})
 
 
 @owner_bp.post("/owner/api/add_playlist_condition/<string:playlist_id>")
@@ -249,10 +249,10 @@ def add_playlist_condition(playlist_id):
 
     request_body = request.json
     if not request_body or (type(request_body) != dict) or "new_permision" not in request_body:
-        return jsonify({"success": False, "message": "Acción rechazada", "status_code": 403}), 403
+        return jsonify({"success": False, "message": "Action rejected", "status_code": 403}), 403
     
     if not _time_interval_is_valid(request_body["new_permision"]["init_time"], request_body["new_permision"]["end_time"]):
-        return jsonify({"success": False, "message": "Datos inválidos", "status_code": 403}), 403
+        return jsonify({"success": False, "message": "Invalid data", "status_code": 403}), 403
 
     new_condition = {
         "id": str(uuid.uuid4()),
@@ -265,7 +265,7 @@ def add_playlist_condition(playlist_id):
     owner_email = session["host_session"]["user_email"]
     add_allow_playlist_condition(owner_email, playlist_id, new_condition)
 
-    return jsonify({"message": "La operación se realizó correctamente"})
+    return jsonify({"message": "The operation was successful"})
 
 
 @owner_bp.delete("/owner/api/delete_playlist_condition/<string:playlist_id>")
@@ -274,13 +274,13 @@ def delete_playlist_condition(playlist_id):
 
     request_body = request.json
     if not request_body or (type(request_body) != dict) or "condition_id" not in request_body:
-        return jsonify({"success": False, "message": "Acción rechazada", "status_code": 403}), 403
+        return jsonify({"success": False, "message": "Action rejected", "status_code": 403}), 403
 
     owner_email = session["host_session"]["user_email"]
     condition_id = request_body["condition_id"]
     delete_allow_playlist_condition(owner_email, playlist_id, condition_id)
 
-    return jsonify({"message": "La operación se realizó correctamente"})
+    return jsonify({"message": "The operation was successful"})
 
 
 @owner_bp.get("/owner/api/get_playlists/<int:offset>/<int:limit>")
@@ -297,7 +297,7 @@ def get_more_playlists(offset, limit):
     if success:
         return jsonify({"success": True, "status_code": 200, "playlists": allowed_playlists})
     else:
-        return jsonify({"success": False, "message":"Error al obtener las playlists"})
+        return jsonify({"success": False, "message": "Error retrieving the playlists"})
 
 
 @owner_bp.get("/owner/api/unlink_spotify_account")
