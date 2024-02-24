@@ -57,7 +57,7 @@ queueModalTrigger.addEventListener("click", ()=>{
         }
 
         else{
-            queueItemsContainer.innerHTML = "No se encontró ningún reproductor activo"
+            queueItemsContainer.innerHTML = "No active player found"
         }
     })
     .catch(error => {

@@ -1,3 +1,0 @@
-traduccion de pagina
-
-configurar server de mongo para que reconozca solo el server de gcloud

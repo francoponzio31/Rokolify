@@ -25,7 +25,7 @@
         <!-- Datos cuenta de Rokolify -->
         
         <section class="p-4 border rounded-3">                
-            <h2 class="fs-4">Perfil de Rokolify</h2>
+            <h2 class="fs-4">Rokolify profile</h2>
             
             <div class="d-flex flex-row align-items-center mt-3 pe-2 gap-3">
                 <img src="{{ rokolify_profile['profile_picture'] }}" class="align-self-start rounded-circle" style="width:65px;" alt="user-image">      
@@ -71,7 +71,7 @@
             <!-- Datos cuenta de Spotify -->
             
             <section class="p-4 border rounded-3">                
-                <h2 class="fs-4">Spotify account linked</h2>
+                <h2 class="fs-4">Linked Spotify account</h2>
                 
                     <div class="d-flex flex-row align-items-center mt-3 pe-2 gap-3">
                         
@@ -110,7 +110,7 @@
                                 <img src="{{url_for('static', filename='img/phone.svg')}}" class="item-image rounded-start" style="width:50px;" alt="item-image">
                             {% elif active_device["type"] == "Speaker" %}
                                 <img src="{{url_for('static', filename='img/speaker.svg')}}" class="item-image rounded-start" style="width:50px;" alt="item-image">
-                            {% elif device["type"] == "TV" %}
+                            {% elif active_device["type"] == "TV" %}
                                 <img src="{{url_for('static', filename='img/tv.svg')}}" class="item-image rounded-start" style="width:50px;" alt="item-image">
                             {% endif %}
                             <div class="w-100 justify-content-between">
