@@ -17,11 +17,9 @@ def create_app():
     ENV = os.getenv("ENV")
     if ENV == "PROD":
         app.config.from_object("app.config.ProductionConfig")
-    elif ENV == "DEV":
-        app.config.from_object("app.config.DevelopmentConfig")
-        os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"     # Para permitir usar oauthlib localmente sin https
     else:
         app.config.from_object("app.config.DevelopmentConfig")
+        os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"     # Para permitir usar oauthlib localmente sin https
 
     # App cache
     app.cache = Cache(app)

@@ -1,2 +1,1 @@
-1: Setear variable de entorno "ENV" como "PROD".
-2: Ir a la raiz del proyecto y ejecutar el comando "gcloud app deploy app.yaml".
+1: Ir a la raiz del proyecto y ejecutar el comando "gcloud app deploy app.yaml".
