@@ -332,7 +332,7 @@ def get_track_data(track_id):
 
     # Duration format:
     total_seconds = track_response["duration_ms"] // 1000
-    track_data["duration"] = "{}:{:02d}".format(total_seconds // 60, total_seconds % 60)
+    track_data["duration"] = "{}:{:02d}".format(int(total_seconds // 60), int(total_seconds % 60))
 
     track_data["spotify_url"] = track_response["external_urls"]["spotify"]
     track_data["preview_url"] = track_response["preview_url"]
