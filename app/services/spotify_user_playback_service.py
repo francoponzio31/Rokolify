@@ -184,7 +184,9 @@ def add_item_to_queue(spotify_access_token, item_uri, device_id=None):
 
     response = requests.post(url, headers=headers)
 
-    if response.status_code == 204:
+    print(response.status_code)
+
+    if response.status_code == 200:
         return True, {"message": "Item added to the queue", "status_code": response.status_code}
 
     return False, {"status_code": response.status_code}
